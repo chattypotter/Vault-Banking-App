@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Send</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-dark:#224248;
+    --teal-mid:#325E6A;
+    --teal-bright:#44A1A4;
+    --orange:#FF9A00;
+    --clay:#C97C3D;
+    --slate:#8AA9AE;
+
+    --bg:#F4F6F5;
+    --card:#FFFFFF;
+    --card-2:#FFFFFF;
+    --ink:#17282B;
+    --ink-soft:#657679;
+    --line:#E3E8E7;
+    --shadow: 0 10px 30px -18px rgba(23,40,43,0.35);
+  }
+  body.dark{
+    --bg:#0E1719;
+    --card:#152528;
+    --card-2:#182A2D;
+    --ink:#EAF1F0;
+    --ink-soft:#89A0A2;
+    --line:#233638;
+    --shadow: 0 10px 30px -16px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+    min-height:100vh;
+    transition:background .25s ease, color .25s ease;
+  }
+  .app{ width:100%; max-width:400px; }
+
+  /* header */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .word{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .word-dot{ width:7px;height:7px;border-radius:50%; background:var(--orange); }
+  .icon-btn{
+    width:34px;height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--card);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink);
+    transition:background .2s;
+  }
+  .icon-btn svg{ width:16px;height:16px; }
+  .head-actions{ display:flex; gap:8px; }
+
+  @keyframes rise{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  /* section label */
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:22px 0 8px 4px;
+  }
+  .section-label:first-of-type{ margin-top:4px; }
+
+  /* send method options — big square tabs */
+  .method-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .method-card{
+    aspect-ratio:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:16px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    opacity:0;
+    animation:rise .45s ease forwards;
+    text-align:center;
+  }
+  .method-card:hover{ transform:translateY(-2px); border-color:var(--teal-bright); }
+  .method-card:active{ transform:scale(0.97); }
+
+  .method-icon{
+    width:56px; height:56px; border-radius:16px;
+    display:flex; align-items:center; justify-content:center;
+    flex:0 0 auto;
+  }
+  .method-icon.upi{ background:rgba(68,161,164,0.14); color:var(--teal-bright); }
+  .method-icon.netbanking{ background:rgba(255,154,0,0.14); color:var(--orange); }
+  .method-icon svg{ width:26px; height:26px; }
+
+  .method-meta{ min-width:0; }
+  .method-name{ font-size:15.5px; font-weight:600; }
+  .method-desc{ font-size:12px; color:var(--ink-soft); margin-top:4px; line-height:1.4; }
+
+  /* credited / debited summary */
+  .flow-split{
+    display:flex;
+    gap:12px;
+    margin-top:4px;
+  }
+  .flow-card{
+    flex:1;
+    min-width:0;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:16px 16px 14px;
+    box-shadow:var(--shadow);
+  }
+  .flow-top{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .flow-dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .flow-dot.credit{ background:var(--teal-bright); }
+  .flow-dot.debit{ background:var(--orange); }
+  .flow-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .flow-amount{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:21px;
+    letter-spacing:-0.01em;
+    margin-bottom:2px;
+  }
+  .flow-amount.credit{ color:var(--teal-bright); }
+  .flow-amount.debit{ color:var(--ink); }
+  .flow-count{ font-size:11.5px; color:var(--ink-soft); }
+
+  .flow-list{ margin-top:10px; }
+  .flow-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 0;
+    border-top:1px solid var(--line);
+  }
+  .flow-item:first-child{ border-top:none; }
+  .flow-item-name{ font-size:12.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:8px; }
+  .flow-item-amount{ font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; flex:0 0 auto; }
+  .flow-item-amount.credit{ color:var(--teal-bright); }
+  .flow-item-amount.debit{ color:var(--ink); }
+
+  footer{
+    text-align:center; margin-top:26px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; color:var(--ink-soft); letter-spacing:.03em;
+  }
+
+  /* bottom nav */
+  .bottom-nav-spacer{ height:78px; }
+  .bottom-nav{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    display:flex;
+    justify-content:center;
+    padding:0 16px 18px;
+    pointer-events:none;
+  }
+  .bottom-nav-inner{
+    width:100%;
+    max-width:368px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    display:flex;
+    padding:8px;
+    gap:4px;
+    pointer-events:auto;
+  }
+  .nav-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    padding:9px 4px 8px;
+    border-radius:14px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:background .15s, color .15s;
+  }
+  .nav-item svg{ width:19px; height:19px; }
+  .nav-item span{
+    font-size:11px;
+    font-weight:500;
+    font-family:'Inter',sans-serif;
+  }
+  .nav-item.active{
+    color:var(--teal-dark);
+    background:rgba(68,161,164,0.14);
+  }
+  body.dark .nav-item.active{
+    color:var(--teal-bright);
+    background:rgba(68,161,164,0.16);
+  }
+
+  /* modal */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(14,23,25,0.45);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:50;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+    padding:0 16px;
+  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
+  .modal-sheet{
+    width:100%; max-width:368px;
+    background:var(--card);
+    border-radius:26px 26px 0 0;
+    padding:22px 22px 26px;
+    box-shadow:0 -12px 40px -12px rgba(0,0,0,0.35);
+    transform:translateY(16px);
+    transition:transform .25s ease;
+    max-height:86vh;
+    overflow-y:auto;
+  }
+  .modal-overlay.open .modal-sheet{ transform:translateY(0); }
+  @media (min-width:460px){
+    .modal-overlay{ align-items:center; }
+    .modal-sheet{ border-radius:24px; }
+  }
+
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .modal-head-left{ display:flex; align-items:center; gap:12px; }
+  .modal-title{ font-family:'Fraunces',serif; font-size:19px; font-weight:600; }
+  .modal-close{
+    width:30px;height:30px; border-radius:50%;
+    border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--ink-soft);
+    flex:0 0 auto;
+  }
+  .modal-close svg{ width:14px;height:14px; }
+
+  .field{ margin-bottom:16px; }
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-soft); margin-bottom:7px;
+  }
+  .field input, .field select{
+    width:100%;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    border-radius:12px;
+    padding:12px 13px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    outline:none;
+    transition:border-color .15s;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .field input:focus, .field select:focus{ border-color:var(--teal-bright); }
+  .field .amount-wrap{ position:relative; }
+  .field .amount-wrap span{
+    position:absolute; left:13px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); font-size:15px;
+  }
+  .field .amount-wrap input{ padding-left:26px; }
+
+  .bank-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:4px; }
+  .bank-chip{
+    border:1px solid var(--line);
+    background:var(--bg);
+    border-radius:12px;
+    padding:11px 12px;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    transition:border-color .15s, background .15s, color .15s;
+  }
+  .bank-chip.selected{ border-color:var(--teal-bright); background:rgba(68,161,164,0.12); color:var(--teal-dark); }
+  body.dark .bank-chip.selected{ color:var(--teal-bright); }
+
+  /* segmented tabs (entry mode / payment type) */
+  .seg-tabs{
+    display:flex;
+    gap:6px;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:4px;
+    margin-bottom:14px;
+  }
+  .seg-tab{
+    flex:1;
+    text-align:center;
+    padding:8px 6px;
+    border-radius:9px;
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .seg-tab.selected{ background:var(--card); color:var(--ink); box-shadow:0 2px 6px -2px rgba(23,40,43,0.2); }
+  body.dark .seg-tab.selected{ background:var(--card-2); }
+
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; min-width:0; }
+
+  /* source account selector — compact chip row */
+  .source-chip-row{ display:flex; gap:8px; }
+  .source-chip{
+    flex:1;
+    text-align:center;
+    border:1px solid var(--line);
+    background:var(--bg);
+    border-radius:12px;
+    padding:10px 8px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .source-chip-name{ font-size:12.5px; font-weight:600; }
+  .source-chip-sub{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-soft); margin-top:2px; }
+  .source-chip.selected{ border-color:var(--teal-bright); background:rgba(68,161,164,0.1); }
+  .source-chip.selected .source-chip-sub{ color:var(--teal-dark); }
+  body.dark .source-chip.selected .source-chip-sub{ color:var(--teal-bright); }
+  .source-balance-note{ font-size:12px; color:var(--ink-soft); margin-top:9px; text-align:center; }
+  .source-balance-note b{ color:var(--ink); font-weight:600; }
+
+  /* form groups — quieter dividers instead of boxed labels everywhere */
+  .form-group{ margin-bottom:20px; }
+  .form-group:last-of-type{ margin-bottom:22px; }
+  .group-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--ink-soft); margin-bottom:9px;
+  }
+  .plain-input{
+    width:100%;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    border-radius:12px;
+    padding:12px 13px;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    outline:none;
+    transition:border-color .15s;
+    margin-top:9px;
+  }
+  .plain-input:focus{ border-color:var(--teal-bright); }
+
+  /* frequent recipients — horizontal scroll */
+  .recipient-row{
+    display:flex; gap:14px;
+    overflow-x:auto;
+    padding-bottom:2px;
+    margin-top:9px;
+    scrollbar-width:none;
+  }
+  .recipient-row::-webkit-scrollbar{ display:none; }
+  .recipient{
+    flex:0 0 auto;
+    width:60px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    cursor:pointer;
+    text-align:center;
+  }
+  .recipient-avatar{
+    width:48px; height:48px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Inter',sans-serif;
+    font-size:14px; font-weight:600;
+    color:#F3F7F6;
+    border:2px solid transparent;
+    transition:border-color .15s, transform .15s;
+  }
+  .recipient:active .recipient-avatar{ transform:scale(0.94); }
+  .recipient.selected .recipient-avatar{ border-color:var(--teal-bright); }
+  .recipient-name{
+    font-size:11px; font-weight:500; color:var(--ink-soft);
+    max-width:60px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .recipient.selected .recipient-name{ color:var(--ink); font-weight:600; }
+
+  /* OTP verification step */
+  .otp-intro{ margin-bottom:16px; }
+  .otp-sub{ font-size:13px; color:var(--ink-soft); line-height:1.5; }
+  .otp-sub b{ color:var(--ink); font-weight:600; }
+  .otp-row{ display:flex; gap:8px; margin-bottom:16px; }
+  .otp-box{
+    flex:1;
+    min-width:0;
+    aspect-ratio:1;
+    text-align:center;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    border-radius:12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:19px;
+    font-weight:500;
+    outline:none;
+    transition:border-color .15s;
+  }
+  .otp-box:focus{ border-color:var(--teal-bright); }
+  .otp-box.filled{ border-color:var(--slate); }
+  .otp-hint{ font-size:11.5px; color:var(--ink-soft); text-align:center; margin-bottom:16px; }
+  .otp-hint b{ color:var(--ink); font-weight:600; letter-spacing:0.06em; }
+
+  .btn{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:opacity .15s;
+  }
+  .btn:active{ opacity:0.8; }
+  .btn:disabled{ opacity:0.5; cursor:default; }
+  .btn-primary{ background:var(--teal-dark); color:#F3F7F6; }
+  body.dark .btn-primary{ background:var(--teal-bright); color:#0E1719; }
+  .btn-ghost{
+    background:transparent; color:var(--ink-soft);
+    padding:12px; margin-top:6px;
+  }
+
+  .field-error{ font-size:12px; color:var(--orange); margin-top:6px; display:none; }
+  .field-error.show{ display:block; }
+
+  /* success state */
+  .success-wrap{ text-align:center; padding:10px 0 4px; }
+  .success-ring{
+    width:64px; height:64px; border-radius:50%;
+    background:rgba(68,161,164,0.14);
+    color:var(--teal-bright);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 16px;
+  }
+  .success-ring svg{ width:28px; height:28px; }
+  .success-title{ font-family:'Fraunces',serif; font-size:19px; font-weight:600; margin-bottom:6px; }
+  .success-sub{ font-size:13px; color:var(--ink-soft); margin-bottom:22px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="word"><span class="word-dot"></span>VAULT</div>
+    <div class="head-actions">
+      <div class="icon-btn" id="themeToggle">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Choose a method</div>
+  <div class="method-grid" id="methodList"></div>
+
+  <div class="section-label">This month</div>
+  <div class="flow-split" id="flowSplit"></div>
+
+  <footer>Vault · Send</footer>
+</div>
+
+<div class="bottom-nav-spacer"></div>
+<div class="bottom-nav">
+  <div class="bottom-nav-inner" id="bottomNav"></div>
+</div>
+
+<!-- UPI modal -->
+<div class="modal-overlay" id="upiOverlay">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-head-left">
+        <div class="method-icon upi" style="width:38px;height:38px;border-radius:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"></svg>
+        </div>
+        <div class="modal-title">Pay via UPI</div>
+      </div>
+      <div class="modal-close" id="closeUpi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+
+    <div id="upiFormBody">
+      <div class="form-group">
+        <div class="group-label">Frequent recipients</div>
+        <div class="recipient-row" id="recipientRow"></div>
+      </div>
+      <div class="field">
+        <label>UPI ID</label>
+        <input type="text" id="upiIdInput" placeholder="name@bank">
+      </div>
+      <div class="field">
+        <label>Amount</label>
+        <div class="amount-wrap">
+          <span>$</span>
+          <input type="number" id="upiAmountInput" placeholder="0" min="1" step="1">
+        </div>
+      </div>
+      <div class="field-error" id="upiError">Enter a valid UPI ID and amount.</div>
+      <button class="btn btn-primary" id="upiSubmitBtn">Send</button>
+      <button class="btn btn-ghost" id="cancelUpi">Cancel</button>
+    </div>
+
+    <div id="upiOtpBody" style="display:none;">
+      <div class="otp-intro">
+        <div class="group-label" style="margin-bottom:6px;">Confirm with your code</div>
+        <div class="otp-sub">Enter the 6-digit security code you set up to confirm this payment.</div>
+      </div>
+      <div class="otp-row" id="otpRow">
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
+      </div>
+      <div class="otp-hint">Demo code: <b>4 8 2 9 1 3</b></div>
+      <div class="field-error" id="otpError">That code didn't match. Try again.</div>
+      <button class="btn btn-primary" id="otpVerifyBtn">Confirm &amp; send</button>
+      <button class="btn btn-ghost" id="otpForgotBtn">Forgot your code?</button>
+    </div>
+
+    <div id="upiSuccessBody" style="display:none;">
+      <div class="success-wrap">
+        <div class="success-ring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="success-title" id="upiSuccessTitle">Sent</div>
+        <div class="success-sub" id="upiSuccessSub">Your payment is on its way.</div>
+        <button class="btn btn-primary" id="doneUpi">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Net Banking modal -->
+<div class="modal-overlay" id="netOverlay">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-head-left">
+        <div class="method-icon netbanking" style="width:38px;height:38px;border-radius:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"></svg>
+        </div>
+        <div class="modal-title">Net Banking</div>
+      </div>
+      <div class="modal-close" id="closeNet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+
+    <div id="netFormBody">
+      <div class="form-group">
+        <div class="group-label">Send to</div>
+        <div class="seg-tabs" id="netEntryTabs"></div>
+        <div id="bankPickWrap">
+          <div class="bank-grid" id="bankGrid"></div>
+        </div>
+        <div id="accountEntryWrap" style="display:none;">
+          <input type="text" class="plain-input" id="accountNumberInput" placeholder="Account number" inputmode="numeric" style="margin-top:0;">
+        </div>
+        <input type="text" class="plain-input" id="ifscInput" placeholder="IFSC code" style="text-transform:uppercase;">
+      </div>
+
+      <div class="form-group">
+        <div class="group-label">Payment type</div>
+        <div class="seg-tabs" id="paymentTypeTabs" style="margin-bottom:0;"></div>
+      </div>
+
+      <div class="form-group">
+        <div class="group-label">Amount</div>
+        <div class="amount-wrap">
+          <span>$</span>
+          <input type="number" id="netAmountInput" placeholder="0" min="1" step="1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="group-label">From</div>
+        <div class="source-chip-row" id="sourceAccountTabs"></div>
+        <div class="source-balance-note" id="sourceBalanceNote"></div>
+      </div>
+
+      <div class="field-error" id="netError">Fill in the recipient, payment type, and amount.</div>
+      <button class="btn btn-primary" id="netSubmitBtn">Continue to bank</button>
+      <button class="btn btn-ghost" id="cancelNet">Cancel</button>
+    </div>
+
+    <div id="netSuccessBody" style="display:none;">
+      <div class="success-wrap">
+        <div class="success-ring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="success-title" id="netSuccessTitle">Redirecting</div>
+        <div class="success-sub" id="netSuccessSub">You'd land on your bank's login next.</div>
+        <button class="btn btn-primary" id="doneNet">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- icons ---------- */
+const ICON_SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const ICON_MOON = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
+const ICON_CHEVRON = '<polyline points="9 18 15 12 9 6"/>';
+const ICON_UPI = '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>'; // bolt
+const ICON_BANK = '<line x1="3" y1="21" x2="21" y2="21"/><line x1="5" y1="21" x2="5" y2="10"/><line x1="9" y1="21" x2="9" y2="10"/><line x1="15" y1="21" x2="15" y2="10"/><line x1="19" y1="21" x2="19" y2="10"/><polygon points="12 3 21 9 3 9"/>';
+
+const navTabs = [
+  { id: 'spend', label: 'Spend', icon: '<rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/>' },
+  { id: 'save',  label: 'Save',  icon: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>' },
+  { id: 'send',  label: 'Send',  icon: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>' },
+  { id: 'track', label: 'Track', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+];
+
+const methods = [
+  {
+    id: 'upi',
+    name: 'UPI',
+    desc: 'Send instantly with a UPI ID or QR code',
+    icon: ICON_UPI,
+    cls: 'upi',
+  },
+  {
+    id: 'netbanking',
+    name: 'Net Banking',
+    desc: "Pay through your bank's net banking login",
+    icon: ICON_BANK,
+    cls: 'netbanking',
+  },
+];
+
+const banks = ['HDFC Bank', 'ICICI Bank', 'SBI', 'Axis Bank', 'Kotak Bank', 'Yes Bank'];
+let selectedBank = null;
+let isDark = false;
+
+const sourceAccounts = [
+  { id: 'checking', name: 'Checking', short: 'CHK', balance: 4218.47 },
+  { id: 'savings',  name: 'Savings',  short: 'SAV', balance: 12540.00 },
+  { id: 'money',    name: 'Money Market', short: 'MMA', balance: 3721.85 },
+];
+const paymentTypes = ['NEFT', 'RTGS', 'IMPS'];
+
+let netEntryMode = 'bank'; // 'bank' | 'account'
+let selectedPaymentType = null;
+let selectedSourceAccount = null;
+
+/* ---------- sample send activity ---------- */
+const sendActivity = [
+  { name: 'Refund — Priya S.',      amount: 1200, type: 'credit' },
+  { name: 'Split — dinner (Arjun)', amount: 640,  type: 'credit' },
+  { name: 'Rent — landlord',        amount: 18500, type: 'debit' },
+  { name: 'Electricity board',      amount: 2140,  type: 'debit' },
+  { name: 'Grocery — Amit K.',      amount: 890,   type: 'debit' },
+  { name: 'Freelance payout',       amount: 5400,  type: 'credit' },
+];
+
+/* ---------- frequent UPI recipients ---------- */
+const frequentRecipients = [
+  { id: 'r1', name: 'Priya',  upiId: 'priya.sharma@okhdfc', color: '#44A1A4' },
+  { id: 'r2', name: 'Arjun',  upiId: 'arjun.mehta@okicici', color: '#FF9A00' },
+  { id: 'r3', name: 'Amit',   upiId: 'amit.kumar@oksbi',    color: '#325E6A' },
+  { id: 'r4', name: 'Landlord', upiId: 'landlord.raj@okaxis', color: '#C97C3D' },
+  { id: 'r5', name: 'Sneha',  upiId: 'sneha.rao@okybl',     color: '#8AA9AE' },
+];
+let selectedRecipientId = null;
+let pendingUpiPayload = null;
+
+/* ---------- render: theme ---------- */
+function renderTheme(){
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeIcon').innerHTML = isDark ? ICON_SUN : ICON_MOON;
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+  isDark = !isDark;
+  renderTheme();
+});
+
+/* ---------- render: bottom nav ---------- */
+function renderBottomNav(){
+  const nav = document.getElementById('bottomNav');
+  nav.innerHTML = navTabs.map(t => `
+    <div class="nav-item ${t.id === 'send' ? 'active' : ''}" data-id="${t.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>
+      <span>${t.label}</span>
+    </div>
+  `).join('');
+}
+
+/* ---------- render: method options ---------- */
+function renderMethods(){
+  const list = document.getElementById('methodList');
+  list.innerHTML = methods.map((m, i) => `
+    <div class="method-card" data-id="${m.id}" style="animation-delay:${i * 0.06}s">
+      <div class="method-icon ${m.cls}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg>
+      </div>
+      <div class="method-meta">
+        <div class="method-name">${m.name}</div>
+        <div class="method-desc">${m.desc}</div>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.method-card').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.dataset.id === 'upi') openUpiModal();
+      else openNetModal();
+    });
+  });
+
+  // fill the small icons inside modal headers too
+  document.querySelectorAll('#upiOverlay .method-icon svg').forEach(svg => svg.innerHTML = ICON_UPI);
+  document.querySelectorAll('#netOverlay .method-icon svg').forEach(svg => svg.innerHTML = ICON_BANK);
+}
+
+/* ---------- render: credited / debited split ---------- */
+function renderFlowSplit(){
+  const wrap = document.getElementById('flowSplit');
+  const credits = sendActivity.filter(t => t.type === 'credit');
+  const debits = sendActivity.filter(t => t.type === 'debit');
+  const sum = arr => arr.reduce((s, t) => s + t.amount, 0);
+
+  const block = (title, items, cls) => `
+    <div class="flow-card">
+      <div class="flow-top">
+        <span class="flow-dot ${cls}"></span>
+        <span class="flow-label">${title}</span>
+      </div>
+      <div class="flow-amount ${cls}">$${sum(items).toLocaleString('en-US')}</div>
+      <div class="flow-count">${items.length} ${items.length === 1 ? 'transaction' : 'transactions'}</div>
+    </div>
+  `;
+
+  wrap.innerHTML = block('Credited', credits, 'credit') + block('Debited', debits, 'debit');
+}
+
+/* ---------- UPI modal ---------- */
+function renderRecipientRow(){
+  const wrap = document.getElementById('recipientRow');
+  wrap.innerHTML = frequentRecipients.map(r => `
+    <div class="recipient ${selectedRecipientId === r.id ? 'selected' : ''}" data-id="${r.id}">
+      <div class="recipient-avatar" style="background:${r.color}">${r.name.slice(0, 2).toUpperCase()}</div>
+      <div class="recipient-name">${r.name}</div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.recipient').forEach(el => {
+    el.addEventListener('click', () => {
+      const r = frequentRecipients.find(x => x.id === el.dataset.id);
+      selectedRecipientId = r.id;
+      document.getElementById('upiIdInput').value = r.upiId;
+      renderRecipientRow();
+    });
+  });
+}
+
+function openUpiModal(){
+  document.getElementById('upiFormBody').style.display = 'block';
+  document.getElementById('upiOtpBody').style.display = 'none';
+  document.getElementById('upiSuccessBody').style.display = 'none';
+  document.getElementById('upiIdInput').value = '';
+  document.getElementById('upiAmountInput').value = '';
+  document.getElementById('upiError').classList.remove('show');
+  selectedRecipientId = null;
+  pendingUpiPayload = null;
+  renderRecipientRow();
+  document.getElementById('upiOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('upiIdInput').focus(), 250);
+}
+function closeUpiModal(){
+  document.getElementById('upiOverlay').classList.remove('open');
+}
+function submitUpi(){
+  const id = document.getElementById('upiIdInput').value.trim();
+  const amt = parseFloat(document.getElementById('upiAmountInput').value);
+  const validId = /^[\w.\-]+@[\w.\-]+$/.test(id);
+  if (!validId || !amt || amt <= 0){
+    document.getElementById('upiError').classList.add('show');
+    return;
+  }
+  pendingUpiPayload = { id, amt };
+  document.getElementById('upiFormBody').style.display = 'none';
+  showUpiOtpStep();
+}
+
+/* ---------- UPI OTP step ---------- */
+function otpBoxes(){
+  return Array.from(document.querySelectorAll('#otpRow .otp-box'));
+}
+function showUpiOtpStep(){
+  document.getElementById('otpError').textContent = "That code didn't match. Try again.";
+  document.getElementById('otpError').classList.remove('show');
+  const boxes = otpBoxes();
+  boxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+  document.getElementById('upiOtpBody').style.display = 'block';
+  setTimeout(() => boxes[0] && boxes[0].focus(), 250);
+}
+function wireOtpBoxes(){
+  const boxes = otpBoxes();
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/[^0-9]/g, '').slice(0, 1);
+      box.classList.toggle('filled', box.value.length === 1);
+      if (box.value && boxes[i + 1]) boxes[i + 1].focus();
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && boxes[i - 1]) boxes[i - 1].focus();
+    });
+  });
+}
+const VAULT_SECURITY_CODE = '482913';
+
+function verifyUpiOtp(){
+  const code = otpBoxes().map(b => b.value).join('');
+  if (code.length !== 6 || !pendingUpiPayload){
+    document.getElementById('otpError').classList.add('show');
+    return;
+  }
+  if (code !== VAULT_SECURITY_CODE){
+    document.getElementById('otpError').textContent = "That code didn't match. Try again.";
+    document.getElementById('otpError').classList.add('show');
+    const boxes = otpBoxes();
+    boxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+    boxes[0] && boxes[0].focus();
+    return;
+  }
+  document.getElementById('otpError').classList.remove('show');
+  const { id, amt } = pendingUpiPayload;
+  document.getElementById('upiSuccessTitle').textContent = `$${amt.toLocaleString('en-US')} sent`;
+  document.getElementById('upiSuccessSub').textContent = `To ${id} via UPI.`;
+  document.getElementById('upiOtpBody').style.display = 'none';
+  document.getElementById('upiSuccessBody').style.display = 'block';
+}
+function forgotUpiCode(){
+  document.getElementById('otpError').textContent = 'Reset your code from account settings, then come back to confirm.';
+  document.getElementById('otpError').classList.add('show');
+  const boxes = otpBoxes();
+  boxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+  boxes[0] && boxes[0].focus();
+}
+wireOtpBoxes();
+
+document.getElementById('closeUpi').addEventListener('click', closeUpiModal);
+document.getElementById('cancelUpi').addEventListener('click', closeUpiModal);
+document.getElementById('doneUpi').addEventListener('click', closeUpiModal);
+document.getElementById('upiSubmitBtn').addEventListener('click', submitUpi);
+document.getElementById('otpVerifyBtn').addEventListener('click', verifyUpiOtp);
+document.getElementById('otpForgotBtn').addEventListener('click', forgotUpiCode);
+document.getElementById('upiIdInput').addEventListener('input', () => {
+  const r = frequentRecipients.find(x => x.upiId === document.getElementById('upiIdInput').value.trim());
+  selectedRecipientId = r ? r.id : null;
+  renderRecipientRow();
+});
+document.getElementById('upiOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'upiOverlay') closeUpiModal();
+});
+
+/* ---------- Net Banking modal ---------- */
+function renderBankGrid(){
+  const grid = document.getElementById('bankGrid');
+  grid.innerHTML = banks.map(b => `
+    <div class="bank-chip ${selectedBank === b ? 'selected' : ''}" data-bank="${b}">${b}</div>
+  `).join('');
+  grid.querySelectorAll('.bank-chip').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedBank = el.dataset.bank;
+      renderBankGrid();
+    });
+  });
+}
+
+function renderNetEntryTabs(){
+  const wrap = document.getElementById('netEntryTabs');
+  const tabs = [
+    { id: 'bank', label: 'Select bank' },
+    { id: 'account', label: 'Add account' },
+  ];
+  wrap.innerHTML = tabs.map(t => `
+    <div class="seg-tab ${netEntryMode === t.id ? 'selected' : ''}" data-id="${t.id}">${t.label}</div>
+  `).join('');
+  wrap.querySelectorAll('.seg-tab').forEach(el => {
+    el.addEventListener('click', () => {
+      netEntryMode = el.dataset.id;
+      renderNetEntryTabs();
+      document.getElementById('bankPickWrap').style.display = netEntryMode === 'bank' ? 'block' : 'none';
+      document.getElementById('accountEntryWrap').style.display = netEntryMode === 'account' ? 'block' : 'none';
+    });
+  });
+}
+
+function renderPaymentTypeTabs(){
+  const wrap = document.getElementById('paymentTypeTabs');
+  wrap.innerHTML = paymentTypes.map(p => `
+    <div class="seg-tab ${selectedPaymentType === p ? 'selected' : ''}" data-type="${p}">${p}</div>
+  `).join('');
+  wrap.querySelectorAll('.seg-tab').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedPaymentType = el.dataset.type;
+      renderPaymentTypeTabs();
+    });
+  });
+}
+
+function renderSourceAccountTabs(){
+  const wrap = document.getElementById('sourceAccountTabs');
+  wrap.innerHTML = sourceAccounts.map(a => `
+    <div class="source-chip ${selectedSourceAccount === a.id ? 'selected' : ''}" data-id="${a.id}">
+      <div class="source-chip-name">${a.short}</div>
+      <div class="source-chip-sub">${a.name}</div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.source-chip').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedSourceAccount = el.dataset.id;
+      renderSourceAccountTabs();
+    });
+  });
+
+  const note = document.getElementById('sourceBalanceNote');
+  const acc = sourceAccounts.find(a => a.id === selectedSourceAccount);
+  note.innerHTML = acc
+    ? `Available balance: <b>$${acc.balance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</b>`
+    : '';
+}
+
+function openNetModal(){
+  selectedBank = null;
+  netEntryMode = 'bank';
+  selectedPaymentType = paymentTypes[0];
+  selectedSourceAccount = sourceAccounts[0].id;
+  document.getElementById('netFormBody').style.display = 'block';
+  document.getElementById('netSuccessBody').style.display = 'none';
+  document.getElementById('netAmountInput').value = '';
+  document.getElementById('accountNumberInput').value = '';
+  document.getElementById('ifscInput').value = '';
+  document.getElementById('netError').classList.remove('show');
+  document.getElementById('bankPickWrap').style.display = 'block';
+  document.getElementById('accountEntryWrap').style.display = 'none';
+  renderBankGrid();
+  renderNetEntryTabs();
+  renderPaymentTypeTabs();
+  renderSourceAccountTabs();
+  document.getElementById('netOverlay').classList.add('open');
+}
+function closeNetModal(){
+  document.getElementById('netOverlay').classList.remove('open');
+}
+function submitNet(){
+  const amt = parseFloat(document.getElementById('netAmountInput').value);
+  const acctNum = document.getElementById('accountNumberInput').value.trim();
+  const ifsc = document.getElementById('ifscInput').value.trim();
+  const ifscPattern = /^[A-Za-z]{4}0[A-Za-z0-9]{6}$/;
+
+  const recipientOk = netEntryMode === 'bank'
+    ? (!!selectedBank && ifscPattern.test(ifsc))
+    : (acctNum.length >= 6 && ifscPattern.test(ifsc));
+
+  if (!recipientOk || !selectedPaymentType || !selectedSourceAccount || !amt || amt <= 0){
+    document.getElementById('netError').classList.add('show');
+    return;
+  }
+
+  const src = sourceAccounts.find(a => a.id === selectedSourceAccount);
+  const recipientLabel = netEntryMode === 'bank'
+    ? `${selectedBank} (${ifsc.toUpperCase()})`
+    : `A/C •• ${acctNum.slice(-4)} (${ifsc.toUpperCase()})`;
+
+  document.getElementById('netSuccessTitle').textContent = 'Redirecting';
+  document.getElementById('netSuccessSub').textContent =
+    `Sending $${amt.toLocaleString('en-US')} via ${selectedPaymentType} from ${src.name} to ${recipientLabel}.`;
+  document.getElementById('netFormBody').style.display = 'none';
+  document.getElementById('netSuccessBody').style.display = 'block';
+}
+document.getElementById('closeNet').addEventListener('click', closeNetModal);
+document.getElementById('cancelNet').addEventListener('click', closeNetModal);
+document.getElementById('doneNet').addEventListener('click', closeNetModal);
+document.getElementById('netSubmitBtn').addEventListener('click', submitNet);
+document.getElementById('netOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'netOverlay') closeNetModal();
+});
+
+/* ---------- init ---------- */
+renderTheme();
+renderBottomNav();
+renderMethods();
+renderFlowSplit();
+</script>
+
+<script>
+/* ---- injected by build_app.py: cross-page tab navigation ---- */
+(function () {
+  var ROUTES = { spend: "index.html", save: "save.html", send: "send.html", track: "track.html" };
+  var CURRENT_TAB = "send";
+  document.addEventListener("click", function (e) {
+    var item = e.target.closest(".nav-item");
+    if (!item) return;
+    var id = item.dataset.id;
+    if (!id || !ROUTES[id] || id === CURRENT_TAB) return;
+    window.location.href = ROUTES[id];
+  });
+})();
+</script>
+</body>
+</html>

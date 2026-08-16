@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Track</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-dark:#224248;
+    --teal-mid:#325E6A;
+    --teal-bright:#44A1A4;
+    --orange:#FF9A00;
+    --clay:#C97C3D;
+    --slate:#8AA9AE;
+
+    --bg:#F4F6F5;
+    --card:#FFFFFF;
+    --card-2:#FFFFFF;
+    --ink:#17282B;
+    --ink-soft:#657679;
+    --line:#E3E8E7;
+    --shadow: 0 10px 30px -18px rgba(23,40,43,0.35);
+  }
+  body.dark{
+    --bg:#0E1719;
+    --card:#152528;
+    --card-2:#182A2D;
+    --ink:#EAF1F0;
+    --ink-soft:#89A0A2;
+    --line:#233638;
+    --shadow: 0 10px 30px -16px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+    min-height:100vh;
+    transition:background .25s ease, color .25s ease;
+  }
+  .app{ width:100%; max-width:400px; }
+
+  /* header */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .word{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .word-dot{ width:7px;height:7px;border-radius:50%; background:var(--orange); }
+  .icon-btn{
+    width:34px;height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--card);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink);
+    transition:background .2s;
+  }
+  .icon-btn svg{ width:16px;height:16px; }
+  .head-actions{ display:flex; gap:8px; }
+
+  @keyframes rise{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  /* hero */
+  .hero{
+    border-radius:26px;
+    padding:24px 22px 22px;
+    background:linear-gradient(135deg, var(--teal-dark), var(--teal-mid));
+    color:#F3F7F6;
+    box-shadow:var(--shadow);
+    opacity:0;
+    animation:rise .5s ease forwards;
+  }
+  .hero-top{ display:flex; align-items:center; justify-content:space-between; }
+  .hero-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#B9D3D1;
+  }
+  .set-limit-btn{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    font-weight:500;
+    color:#F3F7F6;
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.18);
+    padding:6px 11px 6px 9px;
+    border-radius:100px;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .set-limit-btn:hover{ background:rgba(255,255,255,0.2); }
+  .set-limit-btn svg{ width:12px; height:12px; }
+
+  .hero-amount{
+    font-family:'Fraunces',serif;
+    font-optical-sizing:auto;
+    font-weight:500;
+    font-variant-numeric:oldstyle-nums;
+    font-size:42px;
+    letter-spacing:-0.01em;
+    margin:8px 0 2px;
+  }
+  .hero-amount.over{ color:#FFC582; }
+  .hero-amount .cents{ font-size:0.5em; color:#B9D3D1; }
+  .hero-sub{ font-size:12.5px; color:#B9D3D1; margin:6px 0 14px; }
+  .hero-sub b{ color:#EAF3F1; font-weight:600; }
+
+  .hero-limit-bar{ height:6px; border-radius:100px; background:rgba(255,255,255,0.16); overflow:hidden; }
+  .hero-limit-bar-fill{ height:100%; border-radius:100px; transition:width .6s ease; background:#9FE0D9; }
+  .hero-limit-bar-fill.over{ background:#FFC582; }
+
+  /* limit modal */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(14,23,25,0.5);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    z-index:50;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
+  .modal-card{
+    width:100%; max-width:320px;
+    background:var(--card);
+    border-radius:20px;
+    padding:22px 20px 20px;
+    box-shadow:var(--shadow);
+    transform:translateY(10px);
+    transition:transform .2s ease;
+  }
+  .modal-overlay.open .modal-card{ transform:translateY(0); }
+  .modal-title{
+    font-family:'Fraunces',serif;
+    font-size:19px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+  .modal-sub{ font-size:12.5px; color:var(--ink-soft); margin-bottom:16px; }
+  .modal-input-wrap{
+    display:flex; align-items:center;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 14px;
+    margin-bottom:18px;
+    background:var(--bg);
+  }
+  .modal-input-wrap span{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--ink-soft);
+    font-size:15px;
+    margin-right:4px;
+  }
+  .modal-input-wrap input{
+    border:none; outline:none; background:transparent;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15px;
+    color:var(--ink);
+    width:100%;
+  }
+  .modal-actions{ display:flex; gap:8px; }
+  .modal-btn{
+    flex:1;
+    text-align:center;
+    padding:11px 0;
+    border-radius:12px;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:var(--card-2);
+    color:var(--ink);
+    transition:background .15s;
+  }
+  .modal-btn.primary{
+    border:none;
+    background:var(--teal-mid);
+    color:#F3F7F6;
+  }
+  .modal-btn.primary:hover{ background:var(--teal-dark); }
+
+  /* section label */
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:22px 0 8px 4px;
+  }
+  .section-label:first-of-type{ margin-top:20px; }
+
+  /* insight callout */
+  .insight-card{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:15px 16px;
+    box-shadow:var(--shadow);
+  }
+  .insight-icon{
+    width:34px; height:34px; border-radius:11px;
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,154,0,0.14);
+    color:var(--orange);
+  }
+  .insight-icon svg{ width:16px; height:16px; }
+  .insight-text{ font-size:13px; line-height:1.5; color:var(--ink-soft); padding-top:2px; }
+  .insight-text b{ color:var(--ink); font-weight:600; }
+
+  /* category breakdown */
+  .cat-list{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:6px 16px;
+    box-shadow:var(--shadow);
+  }
+  .cat-row{
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+    opacity:0;
+    animation:rise .4s ease forwards;
+  }
+  .cat-row:last-child{ border-bottom:none; }
+  .cat-top{ display:flex; align-items:center; gap:11px; margin-bottom:9px; }
+  .cat-icon{
+    width:32px; height:32px; border-radius:10px;
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cat-icon svg{ width:15px; height:15px; }
+  .cat-name{ flex:1; min-width:0; font-size:13.5px; font-weight:600; }
+  .cat-pct{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); flex:0 0 auto; }
+  .cat-amount{ font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; flex:0 0 auto; margin-left:8px; }
+  .cat-bar{ height:5px; border-radius:100px; background:var(--line); overflow:hidden; margin-left:43px; }
+  .cat-bar-fill{ height:100%; border-radius:100px; transition:width .7s ease; }
+
+  footer{
+    text-align:center; margin-top:24px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; color:var(--ink-soft); letter-spacing:.03em;
+  }
+
+  /* bottom nav */
+  .bottom-nav-spacer{ height:78px; }
+  .bottom-nav{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    display:flex;
+    justify-content:center;
+    padding:0 16px 18px;
+    pointer-events:none;
+  }
+  .bottom-nav-inner{
+    width:100%;
+    max-width:368px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    display:flex;
+    padding:8px;
+    gap:4px;
+    pointer-events:auto;
+  }
+  .nav-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    padding:9px 4px 8px;
+    border-radius:14px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:background .15s, color .15s;
+  }
+  .nav-item svg{ width:19px; height:19px; }
+  .nav-item span{
+    font-size:11px;
+    font-weight:500;
+    font-family:'Inter',sans-serif;
+  }
+  .nav-item.active{
+    color:var(--teal-dark);
+    background:rgba(68,161,164,0.14);
+  }
+  body.dark .nav-item.active{
+    color:var(--teal-bright);
+    background:rgba(68,161,164,0.16);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="word"><span class="word-dot"></span>VAULT</div>
+    <div class="head-actions">
+      <div class="icon-btn" id="themeToggle">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-top">
+      <div class="hero-label">Available to spend</div>
+      <div class="set-limit-btn" id="setLimitBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        <span id="setLimitLabel">Set limit</span>
+      </div>
+    </div>
+    <div class="hero-amount" id="heroAmount"></div>
+    <div class="hero-sub" id="heroSub"></div>
+    <div class="hero-limit-bar"><div class="hero-limit-bar-fill" id="heroLimitBarFill"></div></div>
+  </div>
+
+  <div class="section-label">Automatic analysis</div>
+  <div class="insight-card">
+    <div class="insight-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+    </div>
+    <div class="insight-text" id="insightText"></div>
+  </div>
+
+  <div class="section-label">Spending by category</div>
+  <div class="cat-list" id="catList"></div>
+
+  <footer>Vault · Track</footer>
+</div>
+
+<div class="bottom-nav-spacer"></div>
+<div class="bottom-nav">
+  <div class="bottom-nav-inner" id="bottomNav"></div>
+</div>
+
+<div class="modal-overlay" id="limitModal">
+  <div class="modal-card">
+    <div class="modal-title">Monthly spending limit</div>
+    <div class="modal-sub">You'll see how much is left to spend as you go.</div>
+    <div class="modal-input-wrap">
+      <span>$</span>
+      <input type="number" id="limitInput" inputmode="decimal" placeholder="0.00">
+    </div>
+    <div class="modal-actions">
+      <div class="modal-btn" id="limitCancel">Cancel</div>
+      <div class="modal-btn primary" id="limitSave">Save</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- icons ---------- */
+const ICON_SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const ICON_MOON = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
+const navTabs = [
+  { id: 'spend', label: 'Spend', icon: '<rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/>' },
+  { id: 'save',  label: 'Save',  icon: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>' },
+  { id: 'send',  label: 'Send',  icon: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>' },
+  { id: 'track', label: 'Track', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+];
+
+/* ---------- category data ---------- */
+const categories = [
+  { id: 'rent',    name: 'Rent & Utilities', amount: 2138.32, color: '#325E6A', icon: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>' },
+  { id: 'food',     name: 'Food & Dining',    amount: 612.40,  color: '#FF9A00', icon: '<path d="M7 2v6a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M17 2c-1.5 0-3 1.5-3 4v4c0 1 .5 2 2 2v10"/>' },
+  { id: 'groceries', name: 'Groceries',       amount: 388.72,  color: '#44A1A4', icon: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>' },
+  { id: 'transport', name: 'Transport',       amount: 214.00,  color: '#C97C3D', icon: '<path d="M5 17h14M6 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/><path d="M4 17V8a2 2 0 0 1 2-2h9l5 5v6"/>' },
+  { id: 'shopping', name: 'Shopping',         amount: 176.55,  color: '#8AA9AE', icon: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M16 10a4 4 0 0 1-8 0"/>' },
+  { id: 'entertainment', name: 'Entertainment', amount: 98.20, color: '#B98CC2', icon: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3V9Z"/>' },
+  { id: 'health',   name: 'Health',           amount: 64.90,   color: '#E38B8B', icon: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>' },
+];
+
+let monthlyLimit = 3200;
+let isDark = false;
+
+/* ---------- render: theme ---------- */
+function renderTheme(){
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeIcon').innerHTML = isDark ? ICON_SUN : ICON_MOON;
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+  isDark = !isDark;
+  renderTheme();
+});
+
+/* ---------- limit modal ---------- */
+const limitModal = document.getElementById('limitModal');
+const limitInput = document.getElementById('limitInput');
+
+function openLimitModal(){
+  limitInput.value = monthlyLimit > 0 ? monthlyLimit : '';
+  limitModal.classList.add('open');
+  setTimeout(() => limitInput.focus(), 150);
+}
+function closeLimitModal(){
+  limitModal.classList.remove('open');
+}
+document.getElementById('setLimitBtn').addEventListener('click', openLimitModal);
+document.getElementById('limitCancel').addEventListener('click', closeLimitModal);
+limitModal.addEventListener('click', (e) => { if (e.target === limitModal) closeLimitModal(); });
+document.getElementById('limitSave').addEventListener('click', () => {
+  const val = parseFloat(limitInput.value);
+  if (!isNaN(val) && val > 0){
+    monthlyLimit = val;
+  }
+  closeLimitModal();
+  renderHero();
+});
+limitInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('limitSave').click();
+});
+
+/* ---------- render: bottom nav ---------- */
+function renderBottomNav(){
+  const nav = document.getElementById('bottomNav');
+  nav.innerHTML = navTabs.map(t => `
+    <div class="nav-item ${t.id === 'track' ? 'active' : ''}" data-id="${t.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>
+      <span>${t.label}</span>
+    </div>
+  `).join('');
+}
+
+/* ---------- helpers ---------- */
+function totalSpend(){
+  return categories.reduce((s, c) => s + c.amount, 0);
+}
+function fmtMoney(n){
+  const parts = n.toFixed(2).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return { whole: parts[0], cents: parts[1] };
+}
+
+/* ---------- render: hero ---------- */
+function renderHero(){
+  const spent = totalSpend();
+  const heroAmount = document.getElementById('heroAmount');
+  const heroSub = document.getElementById('heroSub');
+  const barFill = document.getElementById('heroLimitBarFill');
+  const setLimitLabel = document.getElementById('setLimitLabel');
+
+  if (!monthlyLimit || monthlyLimit <= 0){
+    const m = fmtMoney(spent);
+    heroAmount.classList.remove('over');
+    heroAmount.innerHTML = `$${m.whole}<span class="cents">.${m.cents}</span>`;
+    heroSub.innerHTML = `spent this month · no limit set`;
+    barFill.style.width = '0%';
+    barFill.classList.remove('over');
+    setLimitLabel.textContent = 'Set limit';
+    return;
+  }
+
+  const remaining = monthlyLimit - spent;
+  const isOver = remaining < 0;
+  const m = fmtMoney(Math.abs(remaining));
+  const pctUsed = Math.min((spent / monthlyLimit) * 100, 100);
+
+  heroAmount.classList.toggle('over', isOver);
+  heroAmount.innerHTML = `${isOver ? '&minus;' : ''}$${m.whole}<span class="cents">.${m.cents}</span>`;
+
+  const spentFmt = fmtMoney(spent);
+  const limitFmt = fmtMoney(monthlyLimit);
+  heroSub.innerHTML = isOver
+    ? `over your <b>$${limitFmt.whole}</b> limit — $${spentFmt.whole} spent`
+    : `of your <b>$${limitFmt.whole}</b> monthly limit left`;
+
+  barFill.style.width = `${pctUsed}%`;
+  barFill.classList.toggle('over', isOver);
+  setLimitLabel.textContent = 'Edit limit';
+}
+
+/* ---------- render: automatic insight ---------- */
+function renderInsight(){
+  const total = totalSpend();
+  const sorted = [...categories].sort((a, b) => b.amount - a.amount);
+  const top = sorted[0];
+  const topPct = Math.round((top.amount / total) * 100);
+
+  document.getElementById('insightText').innerHTML =
+    `Most of your spending went to <b>${top.name}</b> — <b>${topPct}%</b> of the total.`;
+}
+
+/* ---------- render: category breakdown ---------- */
+function renderCategories(){
+  const total = totalSpend();
+  const sorted = [...categories].sort((a, b) => b.amount - a.amount);
+  const list = document.getElementById('catList');
+
+  list.innerHTML = sorted.map((c, i) => {
+    const pct = Math.round((c.amount / total) * 100);
+    const m = fmtMoney(c.amount);
+    return `
+      <div class="cat-row" style="animation-delay:${i * 0.05}s">
+        <div class="cat-top">
+          <div class="cat-icon" style="background:${c.color}22; color:${c.color}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>
+          </div>
+          <div class="cat-name">${c.name}</div>
+          <div class="cat-pct">${pct}%</div>
+          <div class="cat-amount">$${m.whole}</div>
+        </div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%; background:${c.color}"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ---------- init ---------- */
+renderTheme();
+renderBottomNav();
+renderHero();
+renderInsight();
+renderCategories();
+</script>
+
+<script>
+/* ---- injected by build_app.py: cross-page tab navigation ---- */
+(function () {
+  var ROUTES = { spend: "index.html", save: "save.html", send: "send.html", track: "track.html" };
+  var CURRENT_TAB = "track";
+  document.addEventListener("click", function (e) {
+    var item = e.target.closest(".nav-item");
+    if (!item) return;
+    var id = item.dataset.id;
+    if (!id || !ROUTES[id] || id === CURRENT_TAB) return;
+    window.location.href = ROUTES[id];
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault · Save</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-dark:#224248;
+    --teal-mid:#325E6A;
+    --teal-bright:#44A1A4;
+    --orange:#FF9A00;
+    --clay:#C97C3D;
+    --slate:#8AA9AE;
+
+    --bg:#F4F6F5;
+    --card:#FFFFFF;
+    --card-2:#FFFFFF;
+    --ink:#17282B;
+    --ink-soft:#657679;
+    --line:#E3E8E7;
+    --shadow: 0 10px 30px -18px rgba(23,40,43,0.35);
+  }
+  body.dark{
+    --bg:#0E1719;
+    --card:#152528;
+    --card-2:#182A2D;
+    --ink:#EAF1F0;
+    --ink-soft:#89A0A2;
+    --line:#233638;
+    --shadow: 0 10px 30px -16px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+    min-height:100vh;
+    transition:background .25s ease, color .25s ease;
+  }
+  .app{ width:100%; max-width:400px; }
+
+  /* header */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .word{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .word-dot{ width:7px;height:7px;border-radius:50%; background:var(--orange); }
+  .icon-btn{
+    width:34px;height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--card);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink);
+    transition:background .2s;
+  }
+  .icon-btn svg{ width:16px;height:16px; }
+  .head-actions{ display:flex; gap:8px; }
+
+  /* hero */
+  .hero{
+    border-radius:26px;
+    padding:24px 22px 18px;
+    background:linear-gradient(135deg, var(--teal-dark), var(--teal-mid));
+    color:#F3F7F6;
+    box-shadow:var(--shadow);
+    opacity:0;
+    animation:rise .5s ease forwards;
+  }
+  @keyframes rise{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .hero-top{ display:flex; align-items:center; justify-content:space-between; }
+  .hero-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#B9D3D1;
+  }
+  .hero-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#B9D3D1;
+    border:1px solid rgba(255,255,255,0.22);
+    padding:4px 9px;
+    border-radius:100px;
+  }
+
+  .hero-amount{
+    font-family:'Fraunces',serif;
+    font-optical-sizing:auto;
+    font-weight:500;
+    font-variant-numeric:oldstyle-nums;
+    font-size:42px;
+    letter-spacing:-0.01em;
+    margin:8px 0 2px;
+  }
+  .hero-amount .cents{ font-size:0.5em; color:#B9D3D1; }
+  .hero-sub{ font-size:12.5px; color:#B9D3D1; margin-bottom:16px; }
+  .hero-sub b{ color:#EAF3F1; font-weight:600; }
+
+  /* single full-width progress bar (save hero) */
+  .goal-progress{ margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.14); }
+  .goal-progress-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .goal-progress-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:#9DBAB8;
+  }
+  .goal-progress-pct{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:#F3F7F6; font-weight:500; }
+  .goal-progress-bar{ height:6px; border-radius:100px; background:rgba(255,255,255,0.16); overflow:hidden; }
+  .goal-progress-fill{ height:100%; border-radius:100px; background:var(--orange); transition:width .6s ease; }
+
+  /* section label */
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:20px 0 8px 4px;
+  }
+
+  footer{
+    text-align:center; margin-top:24px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; color:var(--ink-soft); letter-spacing:.03em;
+  }
+
+  /* bottom nav */
+  .bottom-nav-spacer{ height:78px; }
+  .bottom-nav{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    display:flex;
+    justify-content:center;
+    padding:0 16px 18px;
+    pointer-events:none;
+  }
+  .bottom-nav-inner{
+    width:100%;
+    max-width:368px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    display:flex;
+    padding:8px;
+    gap:4px;
+    pointer-events:auto;
+  }
+  .nav-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    padding:9px 4px 8px;
+    border-radius:14px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:background .15s, color .15s;
+  }
+  .nav-item svg{ width:19px; height:19px; }
+  .nav-item span{
+    font-size:11px;
+    font-weight:500;
+    font-family:'Inter',sans-serif;
+  }
+  .nav-item.active{
+    color:var(--teal-dark);
+    background:rgba(68,161,164,0.14);
+  }
+  body.dark .nav-item.active{
+    color:var(--teal-bright);
+    background:rgba(68,161,164,0.16);
+  }
+
+  /* ---------- vault grid ---------- */
+  .vault-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:20px;
+  }
+  .vault-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:18px 12px 16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease;
+    opacity:0;
+    animation:rise .45s ease forwards;
+  }
+  .vault-card:hover{ transform:translateY(-2px); }
+  .vault-card:active{ transform:scale(0.97); }
+
+  .vault-ring-wrap{ position:relative; width:82px; height:82px; flex:0 0 auto; }
+  .vault-ring-wrap > svg{ width:100%; height:100%; transform:rotate(-90deg); display:block; }
+  .vault-ring-bg{ fill:none; stroke:var(--line); stroke-width:7; }
+  .vault-ring-fill{ fill:none; stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset .7s ease; }
+  .vault-ring-center{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .vault-ring-pct{ font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:var(--ink); }
+  .vault-ring-check{ width:18px; height:18px; color:var(--teal-bright); }
+
+  .vault-name{ font-size:13.5px; font-weight:600; line-height:1.25; }
+  .vault-amounts{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); }
+  .vault-amounts b{ color:var(--ink); font-weight:600; }
+
+  .vault-card.add-card{
+    border:1.5px dashed var(--line);
+    box-shadow:none;
+    background:transparent;
+    color:var(--ink-soft);
+    animation:none;
+    opacity:1;
+  }
+  .vault-card.add-card:hover{ border-color:var(--teal-bright); color:var(--teal-bright); transform:translateY(-2px); }
+  .vault-add-icon{
+    width:82px; height:82px; border-radius:50%;
+    border:1.5px dashed var(--line);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .vault-card.add-card:hover .vault-add-icon{ border-color:var(--teal-bright); }
+  .vault-add-icon svg{ width:22px; height:22px; }
+  .vault-card.add-card .vault-name{ font-weight:500; color:inherit; }
+
+  /* ---------- modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(14,23,25,0.45);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:50;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+    padding:0 16px;
+  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
+  .modal-sheet{
+    width:100%; max-width:368px;
+    background:var(--card);
+    border-radius:26px 26px 0 0;
+    padding:22px 22px 26px;
+    box-shadow:0 -12px 40px -12px rgba(0,0,0,0.35);
+    transform:translateY(16px);
+    transition:transform .25s ease;
+    max-height:86vh;
+    overflow-y:auto;
+  }
+  .modal-overlay.open .modal-sheet{ transform:translateY(0); }
+  @media (min-width:460px){
+    .modal-overlay{ align-items:center; }
+    .modal-sheet{ border-radius:24px; }
+  }
+
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .modal-title{ font-family:'Fraunces',serif; font-size:19px; font-weight:600; }
+  .modal-close{
+    width:30px;height:30px; border-radius:50%;
+    border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--ink-soft);
+  }
+  .modal-close svg{ width:14px;height:14px; }
+
+  .field{ margin-bottom:16px; }
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-soft); margin-bottom:7px;
+  }
+  .field input{
+    width:100%;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    border-radius:12px;
+    padding:12px 13px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    outline:none;
+    transition:border-color .15s;
+  }
+  .field input:focus{ border-color:var(--teal-bright); }
+  .field .amount-wrap{ position:relative; }
+  .field .amount-wrap span{
+    position:absolute; left:13px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); font-size:15px;
+  }
+  .field .amount-wrap input{ padding-left:24px; }
+
+  .swatches{ display:flex; gap:9px; margin-bottom:4px; }
+  .swatch{
+    width:28px;height:28px;border-radius:50%;
+    cursor:pointer; border:2px solid transparent;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .swatch.selected{ border-color:var(--ink); }
+  .swatch svg{ width:12px;height:12px; color:#fff; opacity:0; }
+  .swatch.selected svg{ opacity:1; }
+
+  .btn{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:opacity .15s;
+  }
+  .btn:active{ opacity:0.8; }
+  .btn-primary{ background:var(--teal-dark); color:#F3F7F6; }
+  body.dark .btn-primary{ background:var(--teal-bright); color:#0E1719; }
+  .btn-ghost{
+    background:transparent; color:var(--ink-soft);
+    padding:12px; margin-top:6px;
+  }
+
+  .field-error{ font-size:12px; color:var(--orange); margin-top:6px; display:none; }
+  .field-error.show{ display:block; }
+
+  .btn-secondary{
+    background:transparent;
+    color:var(--teal-dark);
+    border:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  body.dark .btn-secondary{ color:var(--teal-bright); }
+
+  .segmented{
+    display:flex;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:4px;
+    gap:4px;
+    margin-bottom:16px;
+  }
+  .segmented-option{
+    flex:1;
+    text-align:center;
+    padding:9px 6px;
+    border-radius:9px;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .segmented-option.active{
+    background:var(--card);
+    color:var(--ink);
+    box-shadow:var(--shadow);
+  }
+  body.dark .segmented-option.active{ background:var(--card-2); }
+
+  .modal-divider{
+    border:none;
+    border-top:1px solid var(--line);
+    margin:4px 0 18px;
+  }
+
+  /* vault detail modal */
+  .detail-ring-wrap{ position:relative; width:150px; height:150px; margin:4px auto 18px; }
+  .detail-ring-wrap > svg{ width:100%; height:100%; transform:rotate(-90deg); display:block; }
+  .detail-ring-bg{ fill:none; stroke:var(--line); stroke-width:10; }
+  .detail-ring-fill{ fill:none; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset .7s ease; }
+  .detail-ring-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .detail-ring-pct{ font-family:'Fraunces',serif; font-size:26px; font-weight:600; }
+  .detail-ring-sub{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
+
+  .detail-stats{ display:flex; justify-content:space-between; margin-bottom:20px; padding:14px 4px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .detail-stat{ text-align:center; flex:1; }
+  .detail-stat-label{ font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin-bottom:5px; }
+  .detail-stat-value{ font-size:15px; font-weight:600; }
+
+  .empty-vaults{
+    text-align:center; padding:34px 16px;
+    color:var(--ink-soft); font-size:13.5px;
+    border:1px dashed var(--line); border-radius:20px; margin-top:18px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="word"><span class="word-dot"></span>VAULT</div>
+    <div class="head-actions">
+      <div class="icon-btn" id="themeToggle" title="Toggle dark mode">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </div>
+      <div class="icon-btn" title="Account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M4.5 20c1.6-3.6 4.4-5.4 7.5-5.4s5.9 1.8 7.5 5.4"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-label">Total saved</span>
+      <span class="hero-badge" id="vaultCount">3 vaults</span>
+    </div>
+    <div class="hero-amount" id="saveAmount">$0<span class="cents">.00</span></div>
+    <div class="hero-sub" id="saveSub"></div>
+    <div class="goal-progress" id="saveGoalProgress"></div>
+  </div>
+
+  <div class="section-label" style="margin-top:20px;">Your vaults</div>
+  <div class="vault-grid" id="vaultGrid"></div>
+
+  <footer>VAULT BANK · MEMBER FDIC</footer>
+
+  <div class="bottom-nav-spacer"></div>
+</div>
+
+<div class="bottom-nav">
+  <div class="bottom-nav-inner" id="bottomNav"></div>
+</div>
+
+<!-- Add Vault modal -->
+<div class="modal-overlay" id="addVaultOverlay">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-title">New vault</div>
+      <div class="modal-close" id="closeAddVault"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    </div>
+    <div class="field">
+      <label for="vaultNameInput">Vault name</label>
+      <input type="text" id="vaultNameInput" placeholder="e.g. Japan Trip" maxlength="28">
+    </div>
+    <div class="field">
+      <label for="vaultGoalInput">Savings goal</label>
+      <div class="amount-wrap">
+        <span>$</span>
+        <input type="number" id="vaultGoalInput" placeholder="0" min="1" step="1">
+      </div>
+      <div class="field-error" id="vaultFormError">Give your vault a name and a goal above $0.</div>
+    </div>
+    <div class="field" style="margin-bottom:8px;">
+      <label>Color</label>
+      <div class="swatches" id="colorSwatches"></div>
+    </div>
+    <button class="btn btn-primary" id="createVaultBtn">Create vault</button>
+  </div>
+</div>
+
+<!-- Vault detail modal -->
+<div class="modal-overlay" id="vaultDetailOverlay">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-title" id="detailName">Vault</div>
+      <div class="modal-close" id="closeDetail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    </div>
+
+    <div class="detail-ring-wrap" id="detailRingWrap"></div>
+
+    <div class="detail-stats">
+      <div class="detail-stat">
+        <div class="detail-stat-label">Saved</div>
+        <div class="detail-stat-value" id="detailSaved">$0</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-label">Goal</div>
+        <div class="detail-stat-value" id="detailGoal">$0</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-label">To go</div>
+        <div class="detail-stat-value" id="detailRemaining">$0</div>
+      </div>
+    </div>
+
+    <div class="segmented" id="fundsModeSegmented">
+      <div class="segmented-option active" data-mode="add">Add money</div>
+      <div class="segmented-option" data-mode="withdraw">Withdraw</div>
+    </div>
+    <div class="field">
+      <label id="fundsInputLabel" for="fundsAmountInput">Amount to add</label>
+      <div class="amount-wrap">
+        <span>$</span>
+        <input type="number" id="fundsAmountInput" placeholder="0" min="1" step="1">
+      </div>
+      <div class="field-error" id="fundsFormError">Enter an amount greater than $0.</div>
+    </div>
+    <button class="btn btn-primary" id="fundsSubmitBtn">Add funds</button>
+
+    <hr class="modal-divider">
+
+    <div class="field">
+      <label for="editGoalInput">Savings goal</label>
+      <div class="amount-wrap">
+        <span>$</span>
+        <input type="number" id="editGoalInput" placeholder="0" min="1" step="1">
+      </div>
+      <div class="field-error" id="goalFormError">Goal must be above $0.</div>
+    </div>
+    <button class="btn btn-secondary" id="updateGoalBtn">Update goal</button>
+
+    <button class="btn btn-ghost" id="deleteVaultBtn">Delete vault</button>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   SAVE TAB — standalone module
+   Designed to be dropped into the larger Vault app later:
+   - CSS variables/tokens match the Spend tab exactly, so styles merge cleanly
+   - Bottom nav markup/ids match the Spend tab's nav so it can be wired to
+     the same tab-switching logic (see renderBottomNav below)
+   - All state and functions are self-contained; only global names are
+     the ones declared here, so it can be pasted into a shared <script>
+     alongside the Spend tab's script with no id collisions
+   ========================================================================== */
+
+/* ---------- data ---------- */
+const vaultColors = [
+  { id: 'teal',   value: '#44A1A4' },
+  { id: 'orange', value: '#FF9A00' },
+  { id: 'mid',    value: '#325E6A' },
+  { id: 'clay',   value: '#C97C3D' },
+  { id: 'slate',  value: '#8AA9AE' },
+];
+
+let vaults = [
+  { id: 'v1', name: 'Emergency Fund', goal: 10000, saved: 6200, color: '#44A1A4' },
+  { id: 'v2', name: 'Japan Trip',     goal: 4000,  saved: 1450, color: '#FF9A00' },
+  { id: 'v3', name: 'New MacBook',    goal: 2500,  saved: 2500, color: '#325E6A' },
+];
+let vaultSeq = 4;
+let activeDetailVaultId = null;
+let isDark = false;
+let selectedColor = vaultColors[0].value;
+
+/* ---------- icons ---------- */
+const ICON_SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const ICON_MOON = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
+const ICON_PLUS = '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>';
+const ICON_CHECK = '<polyline points="20 6 9 17 4 12"/>';
+
+/* Bottom nav — kept identical in shape to the Spend tab's navTabs array so
+   this can later be replaced by a single shared array + tab-switcher. */
+const navTabs = [
+  { id: 'spend', label: 'Spend', icon: '<rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/>' },
+  { id: 'save',  label: 'Save',  icon: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>' },
+  { id: 'send',  label: 'Send',  icon: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>' },
+  { id: 'track', label: 'Track', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+];
+let activeTab = 'save';
+
+/* ---------- helpers ---------- */
+function fmtMoney(n){
+  const neg = n < 0;
+  const abs = Math.abs(n);
+  const parts = abs.toFixed(2).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return { sign: neg ? '−' : '', whole: parts[0], cents: parts[1] };
+}
+function fmtWhole(n){
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+/* ---------- theme ---------- */
+function renderTheme(){
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeIcon').innerHTML = isDark ? ICON_SUN : ICON_MOON;
+}
+
+/* ---------- hero ---------- */
+function renderSaveHero(){
+  const totalSaved = vaults.reduce((s, v) => s + v.saved, 0);
+  const totalGoal = vaults.reduce((s, v) => s + v.goal, 0);
+  const pct = totalGoal > 0 ? Math.min(100, Math.round((totalSaved / totalGoal) * 100)) : 0;
+
+  const m = fmtMoney(totalSaved);
+  document.getElementById('saveAmount').innerHTML = `$${m.whole}<span class="cents">.${m.cents}</span>`;
+  document.getElementById('vaultCount').textContent = vaults.length + (vaults.length === 1 ? ' vault' : ' vaults');
+
+  const sub = document.getElementById('saveSub');
+  if (vaults.length === 0){
+    sub.innerHTML = `Nothing tucked away yet`;
+  } else {
+    sub.innerHTML = `Across <b>${vaults.length} ${vaults.length === 1 ? 'vault' : 'vaults'}</b> toward ${fmtWhole(totalGoal)} in goals`;
+  }
+
+  const progWrap = document.getElementById('saveGoalProgress');
+  if (totalGoal === 0){
+    progWrap.innerHTML = '';
+  } else {
+    progWrap.innerHTML = `
+      <div class="goal-progress-top">
+        <span class="goal-progress-label">Toward all goals</span>
+        <span class="goal-progress-pct">${pct}%</span>
+      </div>
+      <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%"></div></div>
+    `;
+  }
+}
+
+/* ---------- vault grid ---------- */
+function renderVaults(){
+  const grid = document.getElementById('vaultGrid');
+
+  if (vaults.length === 0){
+    grid.innerHTML = `
+      <div class="vault-card add-card" id="addVaultCard" style="grid-column:1 / -1;">
+        <div class="vault-add-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON_PLUS}</svg>
+        </div>
+        <div class="vault-name">Create your first vault</div>
+      </div>
+    `;
+    document.getElementById('addVaultCard').addEventListener('click', openAddVaultModal);
+    return;
+  }
+
+  const cardsHtml = vaults.map((v, i) => {
+    const pct = v.goal > 0 ? Math.min(100, Math.round((v.saved / v.goal) * 100)) : 0;
+    const r = 34;
+    const c = 2 * Math.PI * r;
+    const offset = c * (1 - pct / 100);
+    const complete = pct >= 100;
+    return `
+      <div class="vault-card" data-id="${v.id}" style="animation-delay:${i * 0.05}s">
+        <div class="vault-ring-wrap">
+          <svg viewBox="0 0 84 84">
+            <circle class="vault-ring-bg" cx="42" cy="42" r="${r}"></circle>
+            <circle class="vault-ring-fill" cx="42" cy="42" r="${r}"
+              stroke="${v.color}"
+              stroke-dasharray="${c}"
+              stroke-dashoffset="${offset}"></circle>
+          </svg>
+          <div class="vault-ring-center">
+            ${complete
+              ? `<svg class="vault-ring-check" viewBox="0 0 24 24" fill="none" stroke="${v.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg>`
+              : `<div class="vault-ring-pct">${pct}%</div>`}
+          </div>
+        </div>
+        <div class="vault-name">${v.name}</div>
+        <div class="vault-amounts"><b>${fmtWhole(v.saved)}</b> / ${fmtWhole(v.goal)}</div>
+      </div>
+    `;
+  }).join('');
+
+  const addCard = `
+    <div class="vault-card add-card" id="addVaultCard">
+      <div class="vault-add-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON_PLUS}</svg>
+      </div>
+      <div class="vault-name">New vault</div>
+    </div>
+  `;
+
+  grid.innerHTML = cardsHtml + addCard;
+
+  grid.querySelectorAll('.vault-card[data-id]').forEach(el => {
+    el.addEventListener('click', () => openVaultDetail(el.dataset.id));
+  });
+  document.getElementById('addVaultCard').addEventListener('click', openAddVaultModal);
+}
+
+function renderSaveView(){
+  renderSaveHero();
+  renderVaults();
+}
+
+/* ---------- Add Vault modal ---------- */
+function renderColorSwatches(){
+  const wrap = document.getElementById('colorSwatches');
+  wrap.innerHTML = vaultColors.map(c => `
+    <div class="swatch ${c.value === selectedColor ? 'selected' : ''}" data-color="${c.value}" style="background:${c.value}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.swatch').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedColor = el.dataset.color;
+      renderColorSwatches();
+    });
+  });
+}
+
+function openAddVaultModal(){
+  document.getElementById('vaultNameInput').value = '';
+  document.getElementById('vaultGoalInput').value = '';
+  document.getElementById('vaultFormError').classList.remove('show');
+  selectedColor = vaultColors[vaults.length % vaultColors.length].value;
+  renderColorSwatches();
+  document.getElementById('addVaultOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('vaultNameInput').focus(), 250);
+}
+function closeAddVaultModal(){
+  document.getElementById('addVaultOverlay').classList.remove('open');
+}
+
+function createVault(){
+  const nameInput = document.getElementById('vaultNameInput');
+  const goalInput = document.getElementById('vaultGoalInput');
+  const name = nameInput.value.trim();
+  const goal = parseFloat(goalInput.value);
+
+  if (!name || !goal || goal <= 0){
+    document.getElementById('vaultFormError').classList.add('show');
+    return;
+  }
+
+  vaults.push({
+    id: 'v' + (vaultSeq++),
+    name,
+    goal,
+    saved: 0,
+    color: selectedColor,
+  });
+
+  closeAddVaultModal();
+  renderSaveView();
+}
+
+/* ---------- Vault detail modal ---------- */
+function openVaultDetail(id){
+  activeDetailVaultId = id;
+  const v = vaults.find(v => v.id === id);
+  if (!v) return;
+
+  document.getElementById('detailName').textContent = v.name;
+  document.getElementById('detailSaved').textContent = fmtWhole(v.saved);
+  document.getElementById('detailGoal').textContent = fmtWhole(v.goal);
+  document.getElementById('detailRemaining').textContent = fmtWhole(Math.max(0, v.goal - v.saved));
+  document.getElementById('editGoalInput').value = v.goal;
+  document.getElementById('goalFormError').classList.remove('show');
+  setFundsMode('add');
+
+  const pct = v.goal > 0 ? Math.min(100, Math.round((v.saved / v.goal) * 100)) : 0;
+  const r = 58;
+  const c = 2 * Math.PI * r;
+  const offset = c * (1 - pct / 100);
+  const complete = pct >= 100;
+
+  document.getElementById('detailRingWrap').innerHTML = `
+    <svg viewBox="0 0 140 140">
+      <circle class="detail-ring-bg" cx="70" cy="70" r="${r}"></circle>
+      <circle class="detail-ring-fill" cx="70" cy="70" r="${r}"
+        stroke="${v.color}"
+        stroke-dasharray="${c}"
+        stroke-dashoffset="${offset}"></circle>
+    </svg>
+    <div class="detail-ring-center">
+      <div class="detail-ring-pct">${pct}%</div>
+      <div class="detail-ring-sub">${complete ? 'Goal reached' : 'of goal'}</div>
+    </div>
+  `;
+
+  document.getElementById('vaultDetailOverlay').classList.add('open');
+}
+function closeVaultDetail(){
+  document.getElementById('vaultDetailOverlay').classList.remove('open');
+  activeDetailVaultId = null;
+}
+
+/* ---------- Add / withdraw toggle ---------- */
+let fundsMode = 'add';
+
+function setFundsMode(mode){
+  fundsMode = mode;
+  document.querySelectorAll('#fundsModeSegmented .segmented-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.mode === mode);
+  });
+  document.getElementById('fundsAmountInput').value = '';
+  document.getElementById('fundsFormError').classList.remove('show');
+  const label = document.getElementById('fundsInputLabel');
+  const btn = document.getElementById('fundsSubmitBtn');
+  if (mode === 'withdraw'){
+    label.textContent = 'Amount to withdraw';
+    btn.textContent = 'Withdraw funds';
+  } else {
+    label.textContent = 'Amount to add';
+    btn.textContent = 'Add funds';
+  }
+}
+
+function submitFundsChange(){
+  const v = vaults.find(v => v.id === activeDetailVaultId);
+  if (!v) return;
+  const errorEl = document.getElementById('fundsFormError');
+  const amt = parseFloat(document.getElementById('fundsAmountInput').value);
+
+  if (!amt || amt <= 0){
+    errorEl.textContent = 'Enter an amount greater than $0.';
+    errorEl.classList.add('show');
+    return;
+  }
+  if (fundsMode === 'withdraw' && amt > v.saved){
+    errorEl.textContent = "You can't withdraw more than what's saved.";
+    errorEl.classList.add('show');
+    return;
+  }
+
+  v.saved += fundsMode === 'withdraw' ? -amt : amt;
+  errorEl.classList.remove('show');
+  openVaultDetail(v.id);
+  renderSaveView();
+}
+
+/* ---------- Edit goal ---------- */
+function submitGoalChange(){
+  const v = vaults.find(v => v.id === activeDetailVaultId);
+  if (!v) return;
+  const errorEl = document.getElementById('goalFormError');
+  const goal = parseFloat(document.getElementById('editGoalInput').value);
+
+  if (!goal || goal <= 0){
+    errorEl.classList.add('show');
+    return;
+  }
+
+  v.goal = goal;
+  errorEl.classList.remove('show');
+  openVaultDetail(v.id);
+  renderSaveView();
+}
+
+function deleteActiveVault(){
+  vaults = vaults.filter(v => v.id !== activeDetailVaultId);
+  closeVaultDetail();
+  renderSaveView();
+}
+
+/* ---------- bottom nav ---------- */
+/* Only 'save' does anything on this standalone page. When merged into the
+   full app, replace this handler with the shared tab-switcher that also
+   knows about the Spend/Send/Track views. */
+function renderBottomNav(){
+  const nav = document.getElementById('bottomNav');
+  nav.innerHTML = navTabs.map(t => `
+    <div class="nav-item ${activeTab === t.id ? 'active' : ''}" data-id="${t.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>
+      <span>${t.label}</span>
+    </div>
+  `).join('');
+  nav.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.dataset.id !== 'save') return; // other tabs live on their own pages for now
+      activeTab = el.dataset.id;
+      renderBottomNav();
+    });
+  });
+}
+
+/* ---------- events ---------- */
+document.getElementById('themeToggle').addEventListener('click', () => {
+  isDark = !isDark;
+  renderTheme();
+});
+
+document.getElementById('closeAddVault').addEventListener('click', closeAddVaultModal);
+document.getElementById('addVaultOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'addVaultOverlay') closeAddVaultModal();
+});
+document.getElementById('createVaultBtn').addEventListener('click', createVault);
+
+document.getElementById('closeDetail').addEventListener('click', closeVaultDetail);
+document.getElementById('vaultDetailOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'vaultDetailOverlay') closeVaultDetail();
+});
+document.querySelectorAll('#fundsModeSegmented .segmented-option').forEach(el => {
+  el.addEventListener('click', () => setFundsMode(el.dataset.mode));
+});
+document.getElementById('fundsSubmitBtn').addEventListener('click', submitFundsChange);
+document.getElementById('updateGoalBtn').addEventListener('click', submitGoalChange);
+document.getElementById('deleteVaultBtn').addEventListener('click', deleteActiveVault);
+
+/* ---------- init ---------- */
+renderTheme();
+renderBottomNav();
+renderSaveView();
+</script>
+
+<script>
+/* ---- injected by build_app.py: cross-page tab navigation ---- */
+(function () {
+  var ROUTES = { spend: "index.html", save: "save.html", send: "send.html", track: "track.html" };
+  var CURRENT_TAB = "save";
+  document.addEventListener("click", function (e) {
+    var item = e.target.closest(".nav-item");
+    if (!item) return;
+    var id = item.dataset.id;
+    if (!id || !ROUTES[id] || id === CURRENT_TAB) return;
+    window.location.href = ROUTES[id];
+  });
+})();
+</script>
+</body>
+</html>

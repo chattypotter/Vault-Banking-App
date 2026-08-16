@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-dark:#224248;
+    --teal-mid:#325E6A;
+    --teal-bright:#44A1A4;
+    --orange:#FF9A00;
+
+    --bg:#F4F6F5;
+    --card:#FFFFFF;
+    --card-2:#FFFFFF;
+    --ink:#17282B;
+    --ink-soft:#657679;
+    --line:#E3E8E7;
+    --shadow: 0 10px 30px -18px rgba(23,40,43,0.35);
+  }
+  body.dark{
+    --bg:#0E1719;
+    --card:#152528;
+    --card-2:#182A2D;
+    --ink:#EAF1F0;
+    --ink-soft:#89A0A2;
+    --line:#233638;
+    --shadow: 0 10px 30px -16px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+    min-height:100vh;
+    transition:background .25s ease, color .25s ease;
+  }
+  .app{ width:100%; max-width:400px; }
+
+  /* header */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .word{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .word-dot{ width:7px;height:7px;border-radius:50%; background:var(--orange); }
+  .icon-btn{
+    width:34px;height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--card);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink);
+    transition:background .2s;
+  }
+  .icon-btn svg{ width:16px;height:16px; }
+  .head-actions{ display:flex; gap:8px; }
+
+  /* hero */
+  .hero{
+    border-radius:26px;
+    padding:24px 22px 18px;
+    background:linear-gradient(135deg, var(--teal-dark), var(--teal-mid));
+    color:#F3F7F6;
+    box-shadow:var(--shadow);
+    opacity:0;
+    animation:rise .5s ease forwards;
+  }
+  @keyframes rise{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .hero-top{ display:flex; align-items:center; justify-content:space-between; }
+  .hero-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#B9D3D1;
+  }
+  .hero-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#B9D3D1;
+    border:1px solid rgba(255,255,255,0.22);
+    padding:4px 9px;
+    border-radius:100px;
+  }
+
+  .hero-amount{
+    font-family:'Fraunces',serif;
+    font-optical-sizing:auto;
+    font-weight:500;
+    font-variant-numeric:oldstyle-nums;
+    font-size:42px;
+    letter-spacing:-0.01em;
+    margin:8px 0 2px;
+  }
+  .hero-amount .cents{ font-size:0.5em; color:#B9D3D1; }
+  .hero-sub{ font-size:12.5px; color:#B9D3D1; margin-bottom:16px; }
+  .hero-sub b{ color:#EAF3F1; font-weight:600; }
+
+  .split{
+    display:flex;
+    gap:26px;
+    margin-top:6px;
+    padding-top:16px;
+    border-top:1px solid rgba(255,255,255,0.14);
+  }
+  .split-col{ flex:1; min-width:0; }
+  .split-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#9DBAB8;
+    margin-bottom:5px;
+  }
+  .split-value{
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    color:#F3F7F6;
+    margin-bottom:8px;
+  }
+  .split-bar{
+    height:4px;
+    border-radius:100px;
+    background:rgba(255,255,255,0.16);
+    overflow:hidden;
+  }
+  .split-bar-fill{
+    height:100%;
+    border-radius:100px;
+  }
+  .split-bar-fill.available{ background:var(--teal-bright); }
+  .split-bar-fill.saved{ background:#849EA6; }
+
+  /* bottom nav */
+  .bottom-nav-spacer{ height:78px; }
+  .bottom-nav{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    display:flex;
+    justify-content:center;
+    padding:0 16px 18px;
+    pointer-events:none;
+  }
+  .bottom-nav-inner{
+    width:100%;
+    max-width:368px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    display:flex;
+    padding:8px;
+    gap:4px;
+    pointer-events:auto;
+  }
+  .nav-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    padding:9px 4px 8px;
+    border-radius:14px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:background .15s, color .15s;
+  }
+  .nav-item svg{ width:19px; height:19px; }
+  .nav-item span{
+    font-size:11px;
+    font-weight:500;
+    font-family:'Inter',sans-serif;
+  }
+  .nav-item.active{
+    color:var(--teal-dark);
+    background:rgba(68,161,164,0.14);
+  }
+  body.dark .nav-item.active{
+    color:var(--teal-bright);
+    background:rgba(68,161,164,0.16);
+  }
+
+  /* account chips */
+  .chips{
+    display:flex; gap:8px;
+    overflow-x:auto;
+    margin:18px 0 4px;
+    padding-bottom:2px;
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex:0 0 auto;
+    padding:8px 14px;
+    border-radius:100px;
+    border:1px solid var(--line);
+    background:var(--card);
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-soft);
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .chip.active{ background:var(--teal-dark); border-color:var(--teal-dark); color:#F3F7F6; }
+  body.dark .chip.active{ background:var(--teal-bright); border-color:var(--teal-bright); color:#0E1719; }
+
+  /* transactions */
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:20px 0 8px 4px;
+  }
+  .section-label:first-of-type{ margin-top:16px; }
+
+  .txn{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .txn:last-child{ border-bottom:none; }
+  .txn-left{ display:flex; align-items:center; gap:12px; min-width:0; }
+  .txn-icon{
+    width:36px;height:36px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    flex:0 0 auto;
+    background:rgba(68,161,164,0.14);
+    color:var(--teal-bright);
+  }
+  .txn-icon.debit{ background:rgba(255,154,0,0.14); color:var(--orange); }
+  .txn-icon svg{ width:15px; height:15px; }
+  .txn-meta{ min-width:0; }
+  .txn-name{ font-size:14px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .txn-acct{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .txn-amount{ font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:500; flex:0 0 auto; padding-left:10px; }
+  .txn-amount.credit{ color:var(--teal-bright); }
+  .txn-amount.debit{ color:var(--ink); }
+
+  footer{
+    text-align:center; margin-top:24px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; color:var(--ink-soft); letter-spacing:.03em;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="word"><span class="word-dot"></span>VAULT</div>
+    <div class="head-actions">
+      <div class="icon-btn" id="themeToggle" title="Toggle dark mode">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </div>
+      <div class="icon-btn" title="Account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M4.5 20c1.6-3.6 4.4-5.4 7.5-5.4s5.9 1.8 7.5 5.4"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-label" id="heroLabel">Available balance</span>
+      <span class="hero-badge" id="heroCount">3 accounts</span>
+    </div>
+    <div class="hero-amount" id="heroAmount">$0<span class="cents">.00</span></div>
+    <div class="hero-sub" id="heroSub"></div>
+    <div class="split" id="split"></div>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <div id="txnList"></div>
+
+  <footer>VAULT BANK · MEMBER FDIC</footer>
+
+  <div class="bottom-nav-spacer"></div>
+</div>
+
+<div class="bottom-nav">
+  <div class="bottom-nav-inner" id="bottomNav"></div>
+</div>
+
+<script>
+/* ---------- data ---------- */
+const accounts = [
+  { id: 'checking', name: 'Checking', short: 'CHK', balance: 4218.47 },
+  { id: 'savings',  name: 'Savings',  short: 'SAV', balance: 12540.00 },
+  { id: 'money',    name: 'Money Market', short: 'MMA', balance: 3721.85 },
+];
+
+const transactions = [
+  { date: 'Today',     name: 'Payroll deposit',        acct: 'checking', amount: 2400.00,  type: 'credit' },
+  { date: 'Today',     name: 'Blue Bottle Coffee',      acct: 'checking', amount: -4.50,    type: 'debit'  },
+  { date: 'Yesterday', name: 'Whole Foods Market',       acct: 'checking', amount: -62.18,   type: 'debit'  },
+  { date: 'Yesterday', name: 'Transfer to Savings',      acct: 'savings',  amount: 500.00,   type: 'credit' },
+  { date: 'Yesterday', name: 'Transfer to Savings',      acct: 'checking', amount: -500.00,  type: 'debit'  },
+  { date: 'Aug 14',    name: 'Con Edison Electric',      acct: 'checking', amount: -88.32,   type: 'debit'  },
+  { date: 'Aug 14',    name: 'Interest payment',         acct: 'money',    amount: 6.14,     type: 'credit' },
+  { date: 'Aug 13',    name: 'Rent — Aug',               acct: 'checking', amount: -1850.00, type: 'debit'  },
+  { date: 'Aug 12',    name: 'Freelance — Kessler Co.',  acct: 'checking', amount: 720.00,   type: 'credit' },
+  { date: 'Aug 11',    name: 'Interest payment',         acct: 'savings',  amount: 18.42,    type: 'credit' },
+  { date: 'Aug 10',    name: 'MTA Metrocard',            acct: 'checking', amount: -33.00,   type: 'debit'  },
+];
+
+let activeFilter = 'all';
+let isDark = false;
+
+/* ---------- icons ---------- */
+const ICON_CREDIT = '<path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>';
+const ICON_DEBIT  = '<path d="M12 19V5"/><path d="M6 11l6-6 6 6"/>';
+const ICON_SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const ICON_MOON = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
+
+const navTabs = [
+  { id: 'spend', label: 'Spend', icon: '<rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/>' },
+  { id: 'save',  label: 'Save',  icon: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>' },
+  { id: 'send',  label: 'Send',  icon: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>' },
+  { id: 'track', label: 'Track', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+];
+let activeTab = 'spend';
+
+/* ---------- helpers ---------- */
+function fmtMoney(n){
+  const neg = n < 0;
+  const abs = Math.abs(n);
+  const parts = abs.toFixed(2).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return { sign: neg ? '−' : '', whole: parts[0], cents: parts[1] };
+}
+
+/* ---------- render: theme ---------- */
+function renderTheme(){
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeIcon').innerHTML = isDark ? ICON_SUN : ICON_MOON;
+}
+
+/* ---------- render: hero ---------- */
+function renderHero(){
+  const label = document.getElementById('heroLabel');
+  const amount = document.getElementById('heroAmount');
+  const sub = document.getElementById('heroSub');
+  const count = document.getElementById('heroCount');
+
+  let value, subText;
+  if (activeFilter === 'all') {
+    value = accounts.reduce((s, a) => s + a.balance, 0);
+    label.textContent = 'Available balance';
+    count.textContent = accounts.length + ' accounts';
+    subText = `<b>${accounts.length} accounts</b> combined`;
+  } else {
+    const acc = accounts.find(a => a.id === activeFilter);
+    value = acc.balance;
+    label.textContent = acc.name + ' balance';
+    count.textContent = '•• ' + acc.short;
+    subText = `Account ending <b>•• ${acc.short}</b>`;
+  }
+  const m = fmtMoney(value);
+  amount.innerHTML = `${m.sign}$${m.whole}<span class="cents">.${m.cents}</span>`;
+  sub.innerHTML = subText;
+
+  renderSplit();
+}
+
+/* ---------- render: available / saved split ---------- */
+function renderSplit(){
+  const wrap = document.getElementById('split');
+  if (activeFilter !== 'all'){
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.style.display = 'flex';
+
+  const savings = accounts.find(a => a.id === 'savings').balance;
+  const available = accounts.filter(a => a.id !== 'savings').reduce((s, a) => s + a.balance, 0);
+  const total = available + savings || 1;
+  const availPct = Math.round((available / total) * 100);
+  const savedPct = 100 - availPct;
+
+  const avail = fmtMoney(available);
+  const saved = fmtMoney(savings);
+
+  wrap.innerHTML = `
+    <div class="split-col">
+      <div class="split-label">Available</div>
+      <div class="split-value">$${avail.whole}</div>
+      <div class="split-bar"><div class="split-bar-fill available" style="width:${availPct}%"></div></div>
+    </div>
+    <div class="split-col">
+      <div class="split-label">Saved</div>
+      <div class="split-value">$${saved.whole}</div>
+      <div class="split-bar"><div class="split-bar-fill saved" style="width:${savedPct}%"></div></div>
+    </div>
+  `;
+}
+
+/* ---------- render: chips ---------- */
+function renderChips(){
+  const chips = document.getElementById('chips');
+  const all = [{ id: 'all', name: 'All accounts' }, ...accounts];
+  chips.innerHTML = all.map(a => `
+    <div class="chip ${activeFilter === a.id ? 'active' : ''}" data-id="${a.id}">${a.name}</div>
+  `).join('');
+  chips.querySelectorAll('.chip').forEach(el => {
+    el.addEventListener('click', () => {
+      activeFilter = el.dataset.id;
+      renderChips();
+      renderHero();
+      renderTxns();
+    });
+  });
+}
+
+/* ---------- render: transactions ---------- */
+function renderTxns(){
+  const list = document.getElementById('txnList');
+  const filtered = transactions.filter(t => activeFilter === 'all' || t.acct === activeFilter);
+
+  if (filtered.length === 0){
+    list.innerHTML = `<div class="section-label">No transactions on this account yet.</div>`;
+    return;
+  }
+
+  const groups = [];
+  filtered.forEach(t => {
+    let g = groups.find(g => g.date === t.date);
+    if (!g){ g = { date: t.date, items: [] }; groups.push(g); }
+    g.items.push(t);
+  });
+
+  list.innerHTML = groups.map(g => `
+    <div class="section-label">${g.date}</div>
+    ${g.items.map(t => {
+      const acc = accounts.find(a => a.id === t.acct);
+      const m = fmtMoney(t.amount);
+      return `
+        <div class="txn">
+          <div class="txn-left">
+            <div class="txn-icon ${t.type}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.type === 'credit' ? ICON_CREDIT : ICON_DEBIT}</svg></div>
+            <div class="txn-meta">
+              <div class="txn-name">${t.name}</div>
+              <div class="txn-acct">${acc.name}</div>
+            </div>
+          </div>
+          <div class="txn-amount ${t.type}">${t.type === 'credit' ? '+' : m.sign}$${m.whole}.${m.cents}</div>
+        </div>
+      `;
+    }).join('')}
+  `).join('');
+}
+
+/* ---------- render: bottom nav ---------- */
+function renderBottomNav(){
+  const nav = document.getElementById('bottomNav');
+  nav.innerHTML = navTabs.map(t => `
+    <div class="nav-item ${activeTab === t.id ? 'active' : ''}" data-id="${t.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>
+      <span>${t.label}</span>
+    </div>
+  `).join('');
+  nav.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => {
+      activeTab = el.dataset.id;
+      renderBottomNav();
+    });
+  });
+}
+
+/* ---------- events ---------- */
+document.getElementById('themeToggle').addEventListener('click', () => {
+  isDark = !isDark;
+  renderTheme();
+});
+
+/* ---------- init ---------- */
+renderTheme();
+renderChips();
+renderHero();
+renderTxns();
+renderBottomNav();
+</script>
+
+<script>
+/* ---- injected by build_app.py: cross-page tab navigation ---- */
+(function () {
+  var ROUTES = { spend: "index.html", save: "save.html", send: "send.html", track: "track.html" };
+  var CURRENT_TAB = "spend";
+  document.addEventListener("click", function (e) {
+    var item = e.target.closest(".nav-item");
+    if (!item) return;
+    var id = item.dataset.id;
+    if (!id || !ROUTES[id] || id === CURRENT_TAB) return;
+    window.location.href = ROUTES[id];
+  });
+})();
+</script>
+</body>
+</html>
