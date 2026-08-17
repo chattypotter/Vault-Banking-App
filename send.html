@@ -45,15 +45,17 @@
     min-height:100vh;
     transition:background .25s ease, color .25s ease;
   }
-  .app{ width:100%; max-width:400px; }
+  .app{ width:100%; max-width:400px; position:relative; }
 
   /* header */
   .topbar{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:18px;
+    margin-bottom:20px;
+    position:relative;
   }
+  .topbar-left{ display:flex; align-items:center; gap:11px; }
   .word{
     font-family:'IBM Plex Mono',monospace;
     font-size:12px;
@@ -73,9 +75,46 @@
     cursor:pointer;
     color:var(--ink);
     transition:background .2s;
+    flex:0 0 auto;
+    position:relative;
   }
   .icon-btn svg{ width:16px;height:16px; }
   .head-actions{ display:flex; gap:8px; }
+  .notif-dot{
+    position:absolute; top:6px; right:7px;
+    width:6px; height:6px; border-radius:50%;
+    background:var(--orange);
+    border:1.5px solid var(--card);
+  }
+
+  /* menu dropdown */
+  .menu-dropdown{
+    position:absolute;
+    top:42px; left:0;
+    width:180px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:6px;
+    z-index:40;
+    opacity:0;
+    transform:translateY(-6px);
+    pointer-events:none;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .menu-dropdown.open{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .menu-item{
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    color:var(--ink);
+    transition:background .15s;
+  }
+  .menu-item:hover{ background:var(--bg); }
+  .menu-item.danger{ color:var(--clay); }
 
   @keyframes rise{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
 
@@ -90,45 +129,86 @@
   }
   .section-label:first-of-type{ margin-top:4px; }
 
-  /* send method options — big square tabs */
-  .method-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
+  /* upi id row */
+  .upi-id-row{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px; color:var(--ink-soft);
+    margin-bottom:22px;
   }
-  .method-card{
-    aspect-ratio:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:12px;
+  .upi-id-row b{ color:var(--ink); font-weight:600; }
+  .copy-btn{
+    width:24px; height:24px; border-radius:50%;
+    border:1px solid var(--line); background:var(--card);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--ink-soft);
+    flex:0 0 auto;
+    transition:border-color .15s, color .15s;
+  }
+  .copy-btn svg{ width:11px; height:11px; }
+  .copy-btn.copied{ color:var(--teal-bright); border-color:var(--teal-bright); }
+
+  /* action grid — circular icon shortcuts */
+  .action-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:8px;
+    margin-bottom:20px;
+  }
+  .action-item{
+    display:flex; flex-direction:column; align-items:center; gap:9px;
+    cursor:pointer; text-align:center;
+    opacity:0;
+    animation:rise .4s ease forwards;
+  }
+  .action-circle{
+    width:56px; height:56px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:22px;
-    padding:16px;
-    cursor:pointer;
     box-shadow:var(--shadow);
-    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-    opacity:0;
-    animation:rise .45s ease forwards;
-    text-align:center;
+    color:var(--teal-bright);
+    transition:transform .15s ease, border-color .15s ease;
   }
-  .method-card:hover{ transform:translateY(-2px); border-color:var(--teal-bright); }
-  .method-card:active{ transform:scale(0.97); }
+  .action-item:active .action-circle{ transform:scale(0.92); }
+  .action-circle svg{ width:22px; height:22px; }
+  .action-label{
+    font-size:11.5px; font-weight:500; line-height:1.25;
+    color:var(--ink); max-width:76px;
+  }
 
-  .method-icon{
-    width:56px; height:56px; border-radius:16px;
-    display:flex; align-items:center; justify-content:center;
+  /* promo banner */
+  .promo-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:linear-gradient(135deg, var(--orange), var(--clay));
+    color:#FFF6EC;
+    border-radius:20px;
+    padding:17px 18px;
+    margin-bottom:6px;
+    box-shadow:var(--shadow);
+  }
+  .promo-text{ font-size:12.5px; line-height:1.4; color:#FFEBD2; }
+  .promo-text b{
+    display:block;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:16.5px;
+    color:#FFF9F2;
+    margin-top:2px;
+  }
+  .promo-btn{
     flex:0 0 auto;
+    background:rgba(255,255,255,0.2);
+    border:1px solid rgba(255,255,255,0.32);
+    color:#FFF9F2;
+    font-size:12.5px; font-weight:600;
+    padding:9px 16px;
+    border-radius:100px;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s;
   }
-  .method-icon.upi{ background:rgba(68,161,164,0.14); color:var(--teal-bright); }
-  .method-icon.netbanking{ background:rgba(255,154,0,0.14); color:var(--orange); }
-  .method-icon svg{ width:26px; height:26px; }
-
-  .method-meta{ min-width:0; }
-  .method-name{ font-size:15.5px; font-weight:600; }
-  .method-desc{ font-size:12px; color:var(--ink-soft); margin-top:4px; line-height:1.4; }
+  .promo-btn:hover{ background:rgba(255,255,255,0.3); }
 
   /* credited / debited summary */
   .flow-split{
@@ -164,18 +244,6 @@
   .flow-amount.credit{ color:var(--teal-bright); }
   .flow-amount.debit{ color:var(--ink); }
   .flow-count{ font-size:11.5px; color:var(--ink-soft); }
-
-  .flow-list{ margin-top:10px; }
-  .flow-item{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:8px 0;
-    border-top:1px solid var(--line);
-  }
-  .flow-item:first-child{ border-top:none; }
-  .flow-item-name{ font-size:12.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:8px; }
-  .flow-item-amount{ font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; flex:0 0 auto; }
-  .flow-item-amount.credit{ color:var(--teal-bright); }
-  .flow-item-amount.debit{ color:var(--ink); }
 
   footer{
     text-align:center; margin-top:26px;
@@ -272,6 +340,17 @@
     flex:0 0 auto;
   }
   .modal-close svg{ width:14px;height:14px; }
+
+  .modal-icon{
+    width:38px; height:38px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    flex:0 0 auto;
+  }
+  .modal-icon svg{ width:18px; height:18px; }
+  .modal-icon.upi{ background:rgba(68,161,164,0.14); color:var(--teal-bright); }
+  .modal-icon.netbanking{ background:rgba(255,154,0,0.14); color:var(--orange); }
+  .modal-icon.scan{ background:rgba(50,94,106,0.14); color:var(--teal-mid); }
+  .modal-icon.tap{ background:rgba(201,124,61,0.14); color:var(--clay); }
 
   .field{ margin-bottom:16px; }
   .field label{
@@ -423,9 +502,9 @@
   .otp-intro{ margin-bottom:16px; }
   .otp-sub{ font-size:13px; color:var(--ink-soft); line-height:1.5; }
   .otp-sub b{ color:var(--ink); font-weight:600; }
-  .otp-row{ display:flex; gap:8px; margin-bottom:16px; }
+  .otp-row{ display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; margin-bottom:16px; }
   .otp-box{
-    flex:1;
+    width:100%;
     min-width:0;
     aspect-ratio:1;
     text-align:center;
@@ -434,9 +513,10 @@
     color:var(--ink);
     border-radius:12px;
     font-family:'IBM Plex Mono',monospace;
-    font-size:19px;
+    font-size:clamp(14px, 4.5vw, 19px);
     font-weight:500;
     outline:none;
+    padding:0;
     transition:border-color .15s;
   }
   .otp-box:focus{ border-color:var(--teal-bright); }
@@ -479,22 +559,124 @@
   .success-ring svg{ width:28px; height:28px; }
   .success-title{ font-family:'Fraunces',serif; font-size:19px; font-weight:600; margin-bottom:6px; }
   .success-sub{ font-size:13px; color:var(--ink-soft); margin-bottom:22px; }
+
+  /* scan & pay */
+  .scan-frame{
+    width:100%; aspect-ratio:1;
+    border-radius:20px;
+    background:var(--bg);
+    border:1.5px dashed var(--line);
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:18px;
+    overflow:hidden;
+  }
+  .scan-frame svg{ width:60px; height:60px; color:var(--ink-soft); opacity:.45; }
+  .scan-corner{ position:absolute; width:22px; height:22px; border:2.5px solid var(--teal-bright); }
+  .scan-corner.tl{ top:12px; left:12px; border-right:none; border-bottom:none; border-radius:6px 0 0 0; }
+  .scan-corner.tr{ top:12px; right:12px; border-left:none; border-bottom:none; border-radius:0 6px 0 0; }
+  .scan-corner.bl{ bottom:12px; left:12px; border-right:none; border-top:none; border-radius:0 0 0 6px; }
+  .scan-corner.br{ bottom:12px; right:12px; border-left:none; border-top:none; border-radius:0 0 6px 0; }
+  .scan-line{
+    position:absolute; left:10%; right:10%; height:2px;
+    background:var(--teal-bright);
+    top:12%;
+    box-shadow:0 0 8px 1px rgba(68,161,164,0.5);
+    animation:scanmove 2.2s ease-in-out infinite;
+  }
+  @keyframes scanmove{ 0%{ top:12%; } 50%{ top:88%; } 100%{ top:12%; } }
+  .scan-hint{ font-size:13px; color:var(--ink-soft); text-align:center; line-height:1.5; margin-bottom:20px; }
+
+  /* tap & pay */
+  .nfc-ring{
+    width:88px; height:88px; border-radius:50%;
+    margin:6px auto 18px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(201,124,61,0.12);
+    color:var(--clay);
+    position:relative;
+    transition:background .2s, color .2s;
+  }
+  .nfc-ring.active{ background:rgba(68,161,164,0.14); color:var(--teal-bright); }
+  .nfc-ring svg{ width:38px; height:38px; }
+  .nfc-pulse{
+    position:absolute; inset:-8px;
+    border-radius:50%;
+    border:2px solid currentColor;
+    opacity:0;
+  }
+  .nfc-ring.active .nfc-pulse{ animation:nfcpulse 1.6s ease-out infinite; }
+  @keyframes nfcpulse{ 0%{ opacity:.5; transform:scale(0.9); } 100%{ opacity:0; transform:scale(1.35); } }
+
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 2px;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    margin-bottom:20px;
+  }
+  .toggle-row-label{ font-size:13.5px; font-weight:600; }
+  .toggle-row-sub{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+  .toggle-switch{
+    width:44px; height:25px; border-radius:100px;
+    background:var(--line);
+    position:relative; cursor:pointer;
+    flex:0 0 auto;
+    transition:background .2s;
+  }
+  .toggle-switch.on{ background:var(--teal-bright); }
+  .toggle-knob{
+    width:19px; height:19px; border-radius:50%;
+    background:#fff;
+    position:absolute; top:3px; left:3px;
+    transition:left .2s;
+    box-shadow:0 1px 3px rgba(0,0,0,0.3);
+  }
+  .toggle-switch.on .toggle-knob{ left:22px; }
+  .tap-status{ text-align:center; font-size:13px; color:var(--ink-soft); margin-bottom:20px; }
+  .tap-status b{ color:var(--ink); font-weight:600; }
 </style>
 </head>
 <body>
 <div class="app">
 
   <div class="topbar">
-    <div class="word"><span class="word-dot"></span>VAULT</div>
+    <div class="topbar-left">
+      <div class="icon-btn" id="menuToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </div>
+      <div class="word"><span class="word-dot"></span>VAULT</div>
+      <div class="menu-dropdown" id="menuDropdown">
+        <div class="menu-item">Profile</div>
+        <div class="menu-item">Settings</div>
+        <div class="menu-item">Help &amp; support</div>
+        <div class="menu-item danger">Log out</div>
+      </div>
+    </div>
     <div class="head-actions">
       <div class="icon-btn" id="themeToggle">
         <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
       </div>
+      <div class="icon-btn" id="bellBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-dot"></span>
+      </div>
     </div>
   </div>
 
-  <div class="section-label">Choose a method</div>
-  <div class="method-grid" id="methodList"></div>
+  <div class="upi-id-row">
+    <span>UPI ID: <b id="upiIdDisplay">yourname@vaultpay</b></span>
+    <div class="copy-btn" id="copyUpiId">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    </div>
+  </div>
+
+  <div class="action-grid" id="actionGrid"></div>
+
+  <div class="promo-banner">
+    <div class="promo-text">Go contactless with<b>Tap &amp; Pay</b></div>
+    <div class="promo-btn" id="promoActivate">Activate</div>
+  </div>
 
   <div class="section-label">This month</div>
   <div class="flow-split" id="flowSplit"></div>
@@ -507,15 +689,15 @@
   <div class="bottom-nav-inner" id="bottomNav"></div>
 </div>
 
-<!-- UPI modal -->
+<!-- UPI / Send money modal -->
 <div class="modal-overlay" id="upiOverlay">
   <div class="modal-sheet">
     <div class="modal-head">
       <div class="modal-head-left">
-        <div class="method-icon upi" style="width:38px;height:38px;border-radius:11px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"></svg>
+        <div class="modal-icon upi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
         </div>
-        <div class="modal-title">Pay via UPI</div>
+        <div class="modal-title">Send money</div>
       </div>
       <div class="modal-close" id="closeUpi">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -580,10 +762,10 @@
   <div class="modal-sheet">
     <div class="modal-head">
       <div class="modal-head-left">
-        <div class="method-icon netbanking" style="width:38px;height:38px;border-radius:11px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"></svg>
+        <div class="modal-icon netbanking">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
         </div>
-        <div class="modal-title">Net Banking</div>
+        <div class="modal-title">Netbanking</div>
       </div>
       <div class="modal-close" id="closeNet">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -640,13 +822,77 @@
   </div>
 </div>
 
+<!-- Scan & Pay modal -->
+<div class="modal-overlay" id="scanOverlay">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-head-left">
+        <div class="modal-icon scan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3z"/><path d="M18 18h3v3h-3z"/></svg>
+        </div>
+        <div class="modal-title">Scan &amp; pay</div>
+      </div>
+      <div class="modal-close" id="closeScan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+
+    <div class="scan-frame">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+      <div class="scan-corner tl"></div>
+      <div class="scan-corner tr"></div>
+      <div class="scan-corner bl"></div>
+      <div class="scan-corner br"></div>
+      <div class="scan-line"></div>
+    </div>
+    <div class="scan-hint">Point your camera at any QR code to pay instantly — no need to type an ID.</div>
+    <button class="btn btn-primary" id="simulateScanBtn">Simulate scan</button>
+    <button class="btn btn-ghost" id="cancelScan">Cancel</button>
+  </div>
+</div>
+
+<!-- Tap & Pay modal -->
+<div class="modal-overlay" id="tapOverlay">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-head-left">
+        <div class="modal-icon tap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.3 8.7a5 5 0 0 1 0-7"/><path d="M9.4 5.6a1.4 1.4 0 0 1 0 2"/><rect x="9" y="9" width="12" height="12" rx="2.5"/></svg>
+        </div>
+        <div class="modal-title">Tap &amp; pay</div>
+      </div>
+      <div class="modal-close" id="closeTap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+
+    <div class="nfc-ring" id="nfcRing">
+      <div class="nfc-pulse"></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5a15 15 0 0 1 20 0"/><path d="M5 12a10 10 0 0 1 14 0"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1"/></svg>
+    </div>
+    <div class="tap-status" id="tapStatus">Tap &amp; Pay is <b>off</b>. Turn it on to pay by holding your phone near a terminal.</div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-row-label">Enable Tap &amp; Pay</div>
+        <div class="toggle-row-sub">Uses your default account</div>
+      </div>
+      <div class="toggle-switch" id="tapToggle"><div class="toggle-knob"></div></div>
+    </div>
+
+    <button class="btn btn-primary" id="doneTap">Done</button>
+  </div>
+</div>
+
 <script>
 /* ---------- icons ---------- */
 const ICON_SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
 const ICON_MOON = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
-const ICON_CHEVRON = '<polyline points="9 18 15 12 9 6"/>';
-const ICON_UPI = '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>'; // bolt
+const ICON_UPI = '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>';
 const ICON_BANK = '<line x1="3" y1="21" x2="21" y2="21"/><line x1="5" y1="21" x2="5" y2="10"/><line x1="9" y1="21" x2="9" y2="10"/><line x1="15" y1="21" x2="15" y2="10"/><line x1="19" y1="21" x2="19" y2="10"/><polygon points="12 3 21 9 3 9"/>';
+const ICON_SCAN = '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/>';
+const ICON_TAP = '<path d="M6.3 8.7a5 5 0 0 1 0-7"/><path d="M9.4 5.6a1.4 1.4 0 0 1 0 2"/><rect x="9" y="9" width="12" height="12" rx="2.5"/>';
+const ICON_MENU = '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
 
 const navTabs = [
   { id: 'spend', label: 'Spend', icon: '<rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/>' },
@@ -655,26 +901,19 @@ const navTabs = [
   { id: 'track', label: 'Track', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
 ];
 
-const methods = [
-  {
-    id: 'upi',
-    name: 'UPI',
-    desc: 'Send instantly with a UPI ID or QR code',
-    icon: ICON_UPI,
-    cls: 'upi',
-  },
-  {
-    id: 'netbanking',
-    name: 'Net Banking',
-    desc: "Pay through your bank's net banking login",
-    icon: ICON_BANK,
-    cls: 'netbanking',
-  },
+/* ---------- main action shortcuts ---------- */
+const actions = [
+  { id: 'scan', name: 'Scan & pay', icon: ICON_SCAN },
+  { id: 'send', name: 'Send money', icon: ICON_UPI },
+  { id: 'tap',  name: 'Tap & pay',  icon: ICON_TAP },
+  { id: 'netbanking', name: 'Netbanking', icon: ICON_BANK },
 ];
 
 const banks = ['HDFC Bank', 'ICICI Bank', 'SBI', 'Axis Bank', 'Kotak Bank', 'Yes Bank'];
 let selectedBank = null;
 let isDark = false;
+let menuOpen = false;
+let tapEnabled = false;
 
 const sourceAccounts = [
   { id: 'checking', name: 'Checking', short: 'CHK', balance: 4218.47 },
@@ -718,6 +957,38 @@ document.getElementById('themeToggle').addEventListener('click', () => {
   renderTheme();
 });
 
+/* ---------- menu dropdown ---------- */
+function renderMenu(){
+  document.getElementById('menuDropdown').classList.toggle('open', menuOpen);
+}
+document.getElementById('menuToggle').addEventListener('click', (e) => {
+  e.stopPropagation();
+  menuOpen = !menuOpen;
+  renderMenu();
+});
+document.addEventListener('click', () => {
+  if (menuOpen){ menuOpen = false; renderMenu(); }
+});
+document.getElementById('bellBtn').addEventListener('click', (e) => e.stopPropagation());
+
+/* ---------- copy UPI ID ---------- */
+document.getElementById('copyUpiId').addEventListener('click', async () => {
+  const id = document.getElementById('upiIdDisplay').textContent;
+  const btn = document.getElementById('copyUpiId');
+  try{
+    await navigator.clipboard.writeText(id);
+  }catch(err){
+    const tmp = document.createElement('input');
+    tmp.value = id;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+  }
+  btn.classList.add('copied');
+  setTimeout(() => btn.classList.remove('copied'), 1200);
+});
+
 /* ---------- render: bottom nav ---------- */
 function renderBottomNav(){
   const nav = document.getElementById('bottomNav');
@@ -729,31 +1000,31 @@ function renderBottomNav(){
   `).join('');
 }
 
-/* ---------- render: method options ---------- */
-function renderMethods(){
-  const list = document.getElementById('methodList');
-  list.innerHTML = methods.map((m, i) => `
-    <div class="method-card" data-id="${m.id}" style="animation-delay:${i * 0.06}s">
-      <div class="method-icon ${m.cls}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg>
+/* ---------- render: action grid ---------- */
+function renderActions(){
+  const grid = document.getElementById('actionGrid');
+  grid.innerHTML = actions.map((a, i) => `
+    <div class="action-item" data-id="${a.id}" style="animation-delay:${i * 0.05}s">
+      <div class="action-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${a.icon}</svg>
       </div>
-      <div class="method-meta">
-        <div class="method-name">${m.name}</div>
-        <div class="method-desc">${m.desc}</div>
-      </div>
+      <div class="action-label">${a.name}</div>
     </div>
   `).join('');
 
-  list.querySelectorAll('.method-card').forEach(el => {
+  grid.querySelectorAll('.action-item').forEach(el => {
     el.addEventListener('click', () => {
-      if (el.dataset.id === 'upi') openUpiModal();
-      else openNetModal();
+      const id = el.dataset.id;
+      if (id === 'send') openUpiModal();
+      else if (id === 'netbanking') openNetModal();
+      else if (id === 'scan') openScanModal();
+      else if (id === 'tap') openTapModal();
     });
   });
 
-  // fill the small icons inside modal headers too
-  document.querySelectorAll('#upiOverlay .method-icon svg').forEach(svg => svg.innerHTML = ICON_UPI);
-  document.querySelectorAll('#netOverlay .method-icon svg').forEach(svg => svg.innerHTML = ICON_BANK);
+  // fill modal header icons
+  document.querySelectorAll('#upiOverlay .modal-icon svg').forEach(svg => svg.innerHTML = ICON_UPI);
+  document.querySelectorAll('#netOverlay .modal-icon svg').forEach(svg => svg.innerHTML = ICON_BANK);
 }
 
 /* ---------- render: credited / debited split ---------- */
@@ -777,7 +1048,7 @@ function renderFlowSplit(){
   wrap.innerHTML = block('Credited', credits, 'credit') + block('Debited', debits, 'debit');
 }
 
-/* ---------- UPI modal ---------- */
+/* ---------- UPI / Send money modal ---------- */
 function renderRecipientRow(){
   const wrap = document.getElementById('recipientRow');
   wrap.innerHTML = frequentRecipients.map(r => `
@@ -796,18 +1067,22 @@ function renderRecipientRow(){
   });
 }
 
-function openUpiModal(){
+function openUpiModal(prefillId){
   document.getElementById('upiFormBody').style.display = 'block';
   document.getElementById('upiOtpBody').style.display = 'none';
   document.getElementById('upiSuccessBody').style.display = 'none';
-  document.getElementById('upiIdInput').value = '';
+  document.getElementById('upiIdInput').value = prefillId || '';
   document.getElementById('upiAmountInput').value = '';
   document.getElementById('upiError').classList.remove('show');
   selectedRecipientId = null;
   pendingUpiPayload = null;
   renderRecipientRow();
   document.getElementById('upiOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('upiIdInput').focus(), 250);
+  setTimeout(() => {
+    const amtInput = document.getElementById('upiAmountInput');
+    const idInput = document.getElementById('upiIdInput');
+    (prefillId ? amtInput : idInput).focus();
+  }, 250);
 }
 function closeUpiModal(){
   document.getElementById('upiOverlay').classList.remove('open');
@@ -1021,10 +1296,53 @@ document.getElementById('netOverlay').addEventListener('click', (e) => {
   if (e.target.id === 'netOverlay') closeNetModal();
 });
 
+/* ---------- Scan & Pay modal ---------- */
+function openScanModal(){
+  document.getElementById('scanOverlay').classList.add('open');
+}
+function closeScanModal(){
+  document.getElementById('scanOverlay').classList.remove('open');
+}
+document.getElementById('closeScan').addEventListener('click', closeScanModal);
+document.getElementById('cancelScan').addEventListener('click', closeScanModal);
+document.getElementById('scanOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'scanOverlay') closeScanModal();
+});
+document.getElementById('simulateScanBtn').addEventListener('click', () => {
+  closeScanModal();
+  openUpiModal('merchant.store@okhdfc');
+});
+
+/* ---------- Tap & Pay modal ---------- */
+function renderTapState(){
+  document.getElementById('nfcRing').classList.toggle('active', tapEnabled);
+  document.getElementById('tapToggle').classList.toggle('on', tapEnabled);
+  document.getElementById('tapStatus').innerHTML = tapEnabled
+    ? `Tap &amp; Pay is <b>on</b>. Hold your phone near a terminal to pay.`
+    : `Tap &amp; Pay is <b>off</b>. Turn it on to pay by holding your phone near a terminal.`;
+}
+function openTapModal(){
+  document.getElementById('tapOverlay').classList.add('open');
+  renderTapState();
+}
+function closeTapModal(){
+  document.getElementById('tapOverlay').classList.remove('open');
+}
+document.getElementById('closeTap').addEventListener('click', closeTapModal);
+document.getElementById('doneTap').addEventListener('click', closeTapModal);
+document.getElementById('tapOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'tapOverlay') closeTapModal();
+});
+document.getElementById('tapToggle').addEventListener('click', () => {
+  tapEnabled = !tapEnabled;
+  renderTapState();
+});
+document.getElementById('promoActivate').addEventListener('click', openTapModal);
+
 /* ---------- init ---------- */
 renderTheme();
 renderBottomNav();
-renderMethods();
+renderActions();
 renderFlowSplit();
 </script>
 
